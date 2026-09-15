@@ -7,3 +7,5 @@ export * as catalogCategoryService from "./catalog/category-service";
 export * as catalogCollectionService from "./catalog/collection-service";
 export * as catalogDropService from "./catalog/drop-service";
 export * as inventoryService from "./inventory/inventory-service";
+export * as cartService from "./cart/cart-service";
+export * as wishlistService from "./wishlist/wishlist-service";
