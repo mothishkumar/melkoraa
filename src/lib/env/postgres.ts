@@ -8,6 +8,14 @@ export function isPostgresConnectionString(value: string): boolean {
   return value.startsWith("postgres://") || value.startsWith("postgresql://");
 }
 
+/**
+ * Supabase URI copies sometimes wrap the hostname in IPv6 brackets.
+ * Brackets are only valid for IPv6 addresses, so strip them for hostnames.
+ */
+export function normalizePostgresConnectionString(value: string): string {
+  return value.trim().replace(/@\[([^\]:]+)\]:/g, "@$1:");
+}
+
 export function requirePostgresConnectionString(
   value: string | undefined,
   name: string,
@@ -18,13 +26,15 @@ export function requirePostgresConnectionString(
     );
   }
 
-  if (!isPostgresConnectionString(value)) {
+  const normalized = normalizePostgresConnectionString(value);
+
+  if (!isPostgresConnectionString(normalized)) {
     throw new Error(
       `${name} must be a PostgreSQL URI (postgresql://...), not an HTTP URL. Use the Supabase connection string (transaction pooler for DATABASE_URL, direct for DIRECT_DATABASE_URL).`,
     );
   }
 
-  return value;
+  return normalized;
 }
 
 export function redactSecrets(text: string): string {
