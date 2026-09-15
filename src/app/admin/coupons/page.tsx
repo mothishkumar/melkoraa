@@ -6,7 +6,7 @@ export default function AdminCouponsPage() {
   return (
     <AdminPlaceholder
       title="Coupons"
-      description="Coupon rules and usage limits are not implemented."
+      description="Coupons are not implemented. The coupon admin route remains a stub and is not in operations navigation."
     />
   );
 }

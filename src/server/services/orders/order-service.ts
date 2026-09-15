@@ -36,11 +36,26 @@ export async function getCustomerOrder(userId: string, orderId: string) {
   return loadDetail(order.id);
 }
 
-export async function listAdminOrders(page: number, pageSize: number) {
-  const { rows, total } = await orderRepo.listOrdersAdmin(page, pageSize);
+export async function listAdminOrders(
+  page: number,
+  pageSize: number,
+  filters: {
+    status?: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "returned";
+    paymentStatus?: "pending" | "authorized" | "paid" | "failed" | "refunded" | "partially_refunded";
+    search?: string;
+  } = {},
+) {
+  const { rows, total } = await orderRepo.listOrdersAdmin({
+    page,
+    pageSize,
+    ...filters,
+  });
   const itemsByOrder = await Promise.all(rows.map((row) => orderRepo.listOrderItems(row.id)));
   return {
-    data: rows.map((row, index) => mapOrderSummary(row, itemsByOrder[index] ?? [])),
+    data: rows.map((row, index) => ({
+      ...mapOrderSummary(row, itemsByOrder[index] ?? []),
+      userId: row.userId,
+    })),
     pagination: paginationMeta(page, pageSize, total),
   };
 }
@@ -50,7 +65,22 @@ export async function getAdminOrder(orderId: string) {
   if (!order) {
     throw notFoundError("ORDER_NOT_FOUND", "Order not found.");
   }
-  return loadDetail(order.id);
+  const [items, payment, history] = await Promise.all([
+    orderRepo.listOrderItems(order.id),
+    paymentRepo.findPaymentForOrder(order.id),
+    orderRepo.listOrderStatusHistory(order.id),
+  ]);
+  return {
+    ...mapOrderDetail(order, items, payment),
+    userId: order.userId,
+    history: history.map((entry) => ({
+      id: entry.id,
+      oldStatus: entry.oldStatus,
+      newStatus: entry.newStatus,
+      notes: entry.notes,
+      createdAt: entry.createdAt.toISOString(),
+    })),
+  };
 }
 
 export function canCancelUnpaid(status: string, paymentStatus: string): boolean {

@@ -1,31 +1,119 @@
-import { brand } from "@/lib/brand";
+import Link from "next/link";
 
-export const metadata = {
-  title: "Dashboard",
-};
+import { AdminPageHeader } from "@/components/admin/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatInr } from "@/lib/catalog/money";
+import { getAdminDashboard } from "@/server/services/admin/dashboard-service";
 
-export default function AdminDashboardPage() {
+export const metadata = { title: "Dashboard" };
+
+export default async function AdminDashboardPage() {
+  const snapshot = await getAdminDashboard();
+
+  const cards = [
+    { label: "Products", value: snapshot.products.total, hint: `${snapshot.products.active} active` },
+    { label: "Out of stock", value: snapshot.inventory.outOfStock, hint: `${snapshot.inventory.lowStock} low` },
+    { label: "Pending orders", value: snapshot.orders.pending, hint: `${snapshot.orders.confirmed} confirmed` },
+    { label: "Paid orders", value: snapshot.orders.paid, hint: `${snapshot.orders.cancelled} cancelled` },
+  ];
+
   return (
-    <div className="mx-auto max-w-5xl">
-      <p className="label-caps">Overview</p>
-      <h1 className="editorial-display mt-3 text-4xl">Dashboard</h1>
-      <p className="mt-4 max-w-2xl text-sm leading-7 text-stone">
-        Revenue, orders, customers, and inventory widgets will appear here after catalog
-        and order services exist. No sample metrics are shown.
-      </p>
-      <div className="mt-12 grid gap-px border border-white/10 bg-white/10 md:grid-cols-3">
-        {["Revenue", "Orders", "Customers", "Products", "Average order", "Low stock"].map(
-          (label) => (
-            <div key={label} className="bg-black px-6 py-8">
-              <p className="label-caps">{label}</p>
-              <p className="mt-4 font-heading text-2xl">—</p>
-            </div>
-          ),
-        )}
+    <div className="mx-auto max-w-6xl">
+      <AdminPageHeader
+        title="Dashboard"
+        description="Operational snapshot from catalog, inventory, and order services. No revenue metrics are shown."
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {cards.map((card) => (
+          <Card key={card.label} className="rounded-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                {card.label}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-semibold tabular-nums">{card.value}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{card.hint}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-      <p className="mt-10 text-xs tracking-[0.18em] uppercase text-stone">
-        {brand.name} operations — authenticated staff console. Catalog tools arrive in later phases.
-      </p>
+
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section>
+          <h2 className="mb-3 text-sm font-medium">Recent orders</h2>
+          {snapshot.recentOrders.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No orders yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Order</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {snapshot.recentOrders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell>
+                        <Link href={`/admin/orders/${order.id}`} className="underline-offset-4 hover:underline">
+                          {order.orderNumber}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{order.status}</Badge>
+                      </TableCell>
+                      <TableCell>{order.paymentStatus}</TableCell>
+                      <TableCell className="text-right tabular-nums">{formatInr(order.totalAmount)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+        <section>
+          <h2 className="mb-3 text-sm font-medium">Recent inventory</h2>
+          {snapshot.recentInventory.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No inventory activity yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>When</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {snapshot.recentInventory.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="whitespace-nowrap text-xs">
+                        {new Date(entry.createdAt).toLocaleString("en-IN")}
+                      </TableCell>
+                      <TableCell>{entry.type}</TableCell>
+                      <TableCell className="text-right tabular-nums">{entry.quantity}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

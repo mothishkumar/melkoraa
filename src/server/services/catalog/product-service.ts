@@ -145,6 +145,28 @@ export async function listAdminProducts(query: {
   sort: PublicProductQuery["sort"];
 }) {
   const { rows, total } = await productsRepo.listAdminProducts(query);
+  const ids = rows.map((row) => row.id);
+  const [images, categoryRows, variantCounts] = await Promise.all([
+    productsRepo.listImagesForProducts(ids),
+    productsRepo.listCategoriesForProducts(ids),
+    productsRepo.listVariantCountsForProducts(ids),
+  ]);
+  const imagesByProduct = new Map<string, ReturnType<typeof mapImage>[]>();
+  for (const image of images) {
+    const list = imagesByProduct.get(image.productId) ?? [];
+    list.push(mapImage(image));
+    imagesByProduct.set(image.productId, list);
+  }
+  const categoriesByProduct = new Map<string, ReturnType<typeof mapCategory>[]>();
+  for (const row of categoryRows) {
+    const list = categoriesByProduct.get(row.productId) ?? [];
+    list.push(mapCategory(row));
+    categoriesByProduct.set(row.productId, list);
+  }
+  const countByProduct = new Map(
+    variantCounts.map((row) => [row.productId, Number(row.count)]),
+  );
+
   return {
     data: rows.map((row) => ({
       id: row.id,
@@ -155,6 +177,9 @@ export async function listAdminProducts(query: {
       brand: row.brand,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
+      primaryImage: pickPrimaryImage(imagesByProduct.get(row.id) ?? []),
+      categories: categoriesByProduct.get(row.id) ?? [],
+      variantCount: countByProduct.get(row.id) ?? 0,
     })),
     pagination: paginationMeta(query.page, query.pageSize, total),
   };
@@ -189,7 +214,10 @@ export async function getAdminProduct(id: string) {
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
     images: images.map(mapImage),
-    variants: variants.map(mapVariant),
+    variants: variants.map((row) => ({
+      ...mapVariant(row),
+      isActive: row.isActive,
+    })),
     categories: categoryRows.map(mapCategory),
     drop: drop ? mapDrop(drop) : null,
     edition: mapEdition(editions),

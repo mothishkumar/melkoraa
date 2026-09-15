@@ -267,6 +267,30 @@ export async function listAvailabilityForProducts(productIds: string[], db?: Cat
     .groupBy(productVariants.productId);
 }
 
+export async function listVariantCountsForProducts(productIds: string[], db?: CatalogDb) {
+  if (productIds.length === 0) return [];
+  const client = catalogDb(db);
+  return client
+    .select({
+      productId: productVariants.productId,
+      count: count(),
+    })
+    .from(productVariants)
+    .where(inArray(productVariants.productId, productIds))
+    .groupBy(productVariants.productId);
+}
+
+export async function countProductsByStatus(db?: CatalogDb) {
+  const client = catalogDb(db);
+  return client
+    .select({
+      status: products.status,
+      value: count(),
+    })
+    .from(products)
+    .groupBy(products.status);
+}
+
 export async function listVariantsWithAvailability(productId: string, db?: CatalogDb) {
   const client = catalogDb(db);
   return client

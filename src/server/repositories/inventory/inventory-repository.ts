@@ -269,3 +269,30 @@ export async function listRecentTransactions(
     .orderBy(desc(inventoryTransactions.createdAt))
     .limit(limit);
 }
+
+export async function countInventoryStates(db?: InventoryDb) {
+  const client = inventoryDb(db);
+  const [row] = await client
+    .select({
+      total: count(),
+      outOfStock: sql<number>`coalesce(sum(case when (${inventory.quantityOnHand} - ${inventory.quantityReserved}) <= 0 then 1 else 0 end), 0)`,
+      lowStock: sql<number>`coalesce(sum(case when (${inventory.quantityOnHand} - ${inventory.quantityReserved}) > 0 and (${inventory.quantityOnHand} - ${inventory.quantityReserved}) <= ${inventory.reorderLevel} then 1 else 0 end), 0)`,
+      inStock: sql<number>`coalesce(sum(case when (${inventory.quantityOnHand} - ${inventory.quantityReserved}) > ${inventory.reorderLevel} then 1 else 0 end), 0)`,
+    })
+    .from(inventory);
+  return {
+    total: Number(row?.total ?? 0),
+    outOfStock: Number(row?.outOfStock ?? 0),
+    lowStock: Number(row?.lowStock ?? 0),
+    inStock: Number(row?.inStock ?? 0),
+  };
+}
+
+export async function listRecentLedger(limit = 12, db?: InventoryDb) {
+  const client = inventoryDb(db);
+  return client
+    .select()
+    .from(inventoryTransactions)
+    .orderBy(desc(inventoryTransactions.createdAt))
+    .limit(limit);
+}

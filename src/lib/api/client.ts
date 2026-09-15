@@ -23,6 +23,12 @@ export class ApiClientError extends Error {
 export function userFacingApiMessage(error: unknown, fallback = "Something went wrong. Please try again.") {
   if (error instanceof ApiClientError) {
     if (error.status === 401) return "Sign in to continue.";
+    if (error.status === 403) return "You do not have permission to perform this action.";
+    if (error.status === 404) return "That record was not found.";
+    if (error.status === 409) return error.message || "This change conflicts with the current state.";
+    if (error.status === 422) return error.message || "Check the form and try again.";
+    if (error.status === 429) return "Too many requests. Try again shortly.";
+    if (error.status >= 500) return fallback;
     return error.message || fallback;
   }
   return fallback;
@@ -37,11 +43,12 @@ async function parseJson(response: Response): Promise<unknown> {
 }
 
 export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const isFormData = typeof FormData !== "undefined" && init?.body instanceof FormData;
   const response = await fetch(path, {
     ...init,
     headers: {
       Accept: "application/json",
-      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(init?.body && !isFormData ? { "Content-Type": "application/json" } : {}),
       ...init?.headers,
     },
   });
