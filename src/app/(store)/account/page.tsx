@@ -18,11 +18,10 @@ export default async function AccountPage() {
   });
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-16 md:px-8 md:py-24">
+    <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-8 md:py-24">
       <p className="label-caps">Account</p>
       <h1 className="editorial-display mt-4 text-4xl md:text-6xl">{name}</h1>
       <p className="mt-4 text-sm text-stone">{user.email}</p>
-      <p className="mt-2 label-caps text-stone">{profile.role}</p>
 
       <ul className="mt-12 flex flex-col gap-4 text-sm tracking-[0.16em] uppercase text-stone">
         <li>
@@ -33,6 +32,11 @@ export default async function AccountPage() {
         <li>
           <Link href="/account/addresses" className="hover:text-off-white">
             Addresses
+          </Link>
+        </li>
+        <li>
+          <Link href="/wishlist" className="hover:text-off-white">
+            Wishlist
           </Link>
         </li>
         {hasStaffAccess(profile.role) ? (
@@ -47,11 +51,6 @@ export default async function AccountPage() {
       <div className="mt-12">
         <LogoutButton className="border border-white/20 px-6 py-3" />
       </div>
-
-      <p className="mt-16 max-w-xl text-sm leading-7 text-stone">
-        Orders, addresses, and wishlist management will appear in later phases. This
-        space is your authenticated account home.
-      </p>
     </div>
   );
 }

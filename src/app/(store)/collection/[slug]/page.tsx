@@ -1,24 +1,13 @@
-import { FoundationNotice } from "@/components/common/foundation-notice";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Collection",
-};
-
-export default async function CollectionPage({
+export default async function CollectionRedirect({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  return (
-    <div className="mx-auto max-w-[1600px] px-4 py-16 md:px-8 md:py-24">
-      <FoundationNotice
-        title={slug.replaceAll("-", " ")}
-        description="Collection merchandising is not loaded yet. This route is reserved for drop and collection pages."
-        actionHref="/shop"
-        actionLabel="View shop"
-      />
-    </div>
-  );
+  if (slug === "the-builder" || slug === "drop-001") {
+    redirect("/drop-001");
+  }
+  redirect(`/products?collection=${encodeURIComponent(slug)}`);
 }

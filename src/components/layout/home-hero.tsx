@@ -44,10 +44,16 @@ export function HomeHero() {
           <div className="mt-16 space-y-8">
             <p className="max-w-sm text-sm leading-7 text-stone">{brand.copy.path}</p>
             <Link
-              href="/shop"
+              href="/drop-001"
               className="inline-flex w-fit border border-off-white px-8 py-4 text-[0.7rem] tracking-[0.28em] uppercase transition-colors hover:bg-off-white hover:text-black"
             >
               SHOP DROP 001
+            </Link>
+            <Link
+              href="/drop-001"
+              className="block text-[0.7rem] tracking-[0.22em] uppercase text-stone hover:text-off-white"
+            >
+              EXPLORE THE BUILDER
             </Link>
           </div>
         </div>

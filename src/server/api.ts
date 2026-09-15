@@ -28,6 +28,8 @@ export function uniqueConstraintMessage(error: unknown, fallback: string): strin
   if (text.includes("wishlist")) return "This product is already in your wishlist.";
   if (text.includes("order_number")) return "That order number is already in use.";
   if (text.includes("idempotency")) return "A checkout with this key already exists.";
+  if (text.includes("provider_event")) return "This payment event was already processed.";
+  if (text.includes("provider_order")) return "This provider order is already attached.";
   return fallback;
 }
 

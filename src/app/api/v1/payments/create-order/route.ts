@@ -1,8 +1,12 @@
 import { requireApiAuth } from "@/lib/auth/api-guard";
-import { notImplemented } from "@/server/http";
+import { jsonError } from "@/server/http";
 
 export async function POST() {
   const auth = await requireApiAuth();
   if (!auth.ok) return auth.response;
-  return notImplemented("Create payment order");
+  return jsonError(
+    "USE_CHECKOUT",
+    "Razorpay orders are created by POST /api/v1/checkout. This endpoint is not used.",
+    409,
+  );
 }

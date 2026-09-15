@@ -1,18 +1,26 @@
-import { FoundationNotice } from "@/components/common/foundation-notice";
+import { CheckoutClient } from "@/features/checkout/checkout-client";
+import { requireAuth } from "@/lib/auth/require-auth";
+import { listCustomerAddresses } from "@/server/services/addresses/address-service";
+import { getCart } from "@/server/services/cart/cart-service";
 
 export const metadata = {
   title: "Checkout",
 };
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const { user } = await requireAuth("/checkout");
+  const [cart, addresses] = await Promise.all([
+    getCart(user.id),
+    listCustomerAddresses(user.id),
+  ]);
+
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-16 md:px-8 md:py-24">
-      <FoundationNotice
-        title="CHECKOUT"
-        description="Checkout, inventory reservation, and payments are intentionally unimplemented. This route is protected once Supabase Auth is configured."
-        actionHref="/cart"
-        actionLabel="Return to bag"
-      />
+    <div className="mx-auto max-w-[1600px] px-4 py-12 md:px-8 md:py-16">
+      <p className="label-caps">Checkout</p>
+      <h1 className="editorial-display mt-4 text-4xl md:text-6xl">Pay</h1>
+      <div className="mt-12">
+        <CheckoutClient userId={user.id} cart={cart} addresses={addresses} />
+      </div>
     </div>
   );
 }

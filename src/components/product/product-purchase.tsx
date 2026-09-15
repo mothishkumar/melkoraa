@@ -1,0 +1,169 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { addCartItemRequest } from "@/lib/api/cart";
+import { ApiClientError, userFacingApiMessage } from "@/lib/api/client";
+import { formatInr } from "@/lib/catalog/money";
+import { useUiStore } from "@/hooks/use-ui-store";
+import type { ProductDetail } from "@/types/catalog";
+import { WishlistButton } from "@/components/product/wishlist-button";
+
+export function ProductPurchase({
+  product,
+  wishlisted,
+  isAuthenticated,
+}: {
+  product: ProductDetail;
+  wishlisted: boolean;
+  isAuthenticated: boolean;
+}) {
+  const router = useRouter();
+  const sizes = useMemo(
+    () => Array.from(new Set(product.variants.map((variant) => variant.size))),
+    [product.variants],
+  );
+  const colors = useMemo(
+    () => Array.from(new Set(product.variants.map((variant) => variant.color))),
+    [product.variants],
+  );
+  const [size, setSize] = useState(sizes[0] ?? "");
+  const [color, setColor] = useState(colors[0] ?? "");
+  const [quantity, setQuantity] = useState(1);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const selected = product.variants.find(
+    (variant) => variant.size === size && variant.color === color,
+  );
+  const price = selected?.price ?? product.basePrice;
+  const canAdd = Boolean(selected?.available);
+
+  return (
+    <div className="flex flex-col gap-8">
+      <div>
+        <p className="label-caps">{product.drop?.name ?? "MELKORAA"}</p>
+        <h1 className="editorial-display mt-4 text-4xl md:text-6xl">{product.name}</h1>
+        <p className="mt-6 text-lg">{formatInr(price)}</p>
+        <p className="mt-3 label-caps">
+          {selected ? (selected.available ? "Available" : "Unavailable") : "Select a variant"}
+        </p>
+      </div>
+
+      {product.description || product.shortDescription ? (
+        <p className="max-w-md text-sm leading-7 text-stone">
+          {product.description ?? product.shortDescription}
+        </p>
+      ) : null}
+
+      {sizes.length > 0 ? (
+        <fieldset>
+          <legend className="label-caps mb-3">Size</legend>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setSize(value)}
+                className={`min-h-11 min-w-11 border px-3 text-sm ${
+                  size === value ? "border-off-white bg-off-white text-black" : "border-white/20"
+                }`}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {colors.length > 1 ? (
+        <fieldset>
+          <legend className="label-caps mb-3">Color</legend>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setColor(value)}
+                className={`min-h-11 border px-4 text-sm ${
+                  color === value ? "border-off-white bg-off-white text-black" : "border-white/20"
+                }`}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+      <div>
+        <label className="label-caps" htmlFor="qty">
+          Quantity
+        </label>
+        <div className="mt-3 flex items-center border border-white/20">
+          <button
+            type="button"
+            className="size-11"
+            aria-label="Decrease quantity"
+            onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+          >
+            −
+          </button>
+          <input
+            id="qty"
+            readOnly
+            value={quantity}
+            className="w-12 bg-transparent text-center text-sm"
+          />
+          <button
+            type="button"
+            className="size-11"
+            aria-label="Increase quantity"
+            onClick={() => setQuantity((value) => Math.min(20, value + 1))}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="button"
+          disabled={!canAdd || pending}
+          className="h-12 flex-1 rounded-none tracking-[0.2em] uppercase"
+          onClick={async () => {
+            if (!isAuthenticated) {
+              router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);
+              return;
+            }
+            if (!selected?.available) {
+              setNotice("That size is not available.");
+              return;
+            }
+            setPending(true);
+            setNotice(null);
+            try {
+              const cart = await addCartItemRequest(selected.id, quantity);
+              useUiStore.setState({ bagCount: cart.itemCount });
+              setNotice("Added to bag.");
+            } catch (error) {
+              if (error instanceof ApiClientError && error.status === 401) {
+                router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);
+                return;
+              }
+              setNotice(userFacingApiMessage(error));
+            } finally {
+              setPending(false);
+            }
+          }}
+        >
+          {pending ? "Adding" : canAdd ? "Add to bag" : "Unavailable"}
+        </Button>
+        <WishlistButton productId={product.id} initial={wishlisted} />
+      </div>
+      {notice ? <p className="text-sm text-stone">{notice}</p> : null}
+    </div>
+  );
+}

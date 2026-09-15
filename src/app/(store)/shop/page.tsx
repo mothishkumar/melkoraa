@@ -1,18 +1,15 @@
-import { FoundationNotice } from "@/components/common/foundation-notice";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Shop",
-};
-
-export default function ShopPage() {
-  return (
-    <div className="mx-auto max-w-[1600px] px-4 py-16 md:px-8 md:py-24">
-      <FoundationNotice
-        title="SHOP"
-        description="Product listing, filters, and inventory availability will be served from the catalog API in a later phase. Nothing is for sale on this foundation build."
-        actionHref="/"
-        actionLabel="Back to home"
-      />
-    </div>
-  );
+export default async function ShopRedirect({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (typeof value === "string") query.set(key, value);
+  }
+  const suffix = query.toString();
+  redirect(suffix ? `/products?${suffix}` : "/products");
 }

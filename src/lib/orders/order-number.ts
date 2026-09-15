@@ -12,6 +12,7 @@ export function isOrderNumber(value: string): boolean {
   return ORDER_NUMBER_PATTERN.test(value);
 }
 
-export const CHECKOUT_PAYMENT_PROVIDER = "checkout";
+export const CHECKOUT_PAYMENT_PROVIDER = "razorpay";
 export const INVENTORY_REF_RESERVE = "order_item";
 export const INVENTORY_REF_RELEASE = "order_item_release";
+export const INVENTORY_REF_SALE = "order_item_sale";

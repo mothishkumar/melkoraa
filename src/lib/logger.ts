@@ -1,19 +1,24 @@
 type LogLevel = "info" | "warn" | "error";
 
-const REDACT_KEYS = new Set([
-  "password",
-  "token",
-  "access_token",
-  "refresh_token",
-  "authorization",
-  "cookie",
-  "service_role",
-  "serviceRoleKey",
-  "SUPABASE_SERVICE_ROLE_KEY",
-  "secret",
-  "api_key",
-  "apikey",
-]);
+const REDACT_KEYS = new Set(
+  [
+    "password",
+    "token",
+    "access_token",
+    "refresh_token",
+    "authorization",
+    "cookie",
+    "service_role",
+    "servicerolekey",
+    "supabase_service_role_key",
+    "razorpay_key_secret",
+    "razorpay_webhook_secret",
+    "razorpay_signature",
+    "x-razorpay-signature",
+    "webhook_secret",
+    "key_secret",
+  ].map((key) => key.toLowerCase()),
+);
 
 function sanitize(value: unknown, key?: string): unknown {
   if (key && REDACT_KEYS.has(key.toLowerCase())) {

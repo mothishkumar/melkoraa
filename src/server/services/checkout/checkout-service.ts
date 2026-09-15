@@ -15,7 +15,9 @@ import type { OrderDb } from "@/server/repositories/orders/db";
 import * as paymentRepo from "@/server/repositories/payments/payment-repository";
 import { reserveInventory } from "@/server/services/inventory/inventory-service";
 import { mapOrderDetail } from "@/server/services/orders/mappers";
+import { attachRazorpayOrderForCheckout } from "@/server/services/payments/payment-service";
 import type { OrderDetailDto } from "@/types/orders";
+import type { CheckoutSessionDto } from "@/types/payments";
 
 export type CheckoutInput = {
   addressId: string;
@@ -202,19 +204,20 @@ async function createCheckoutOrder(
   return loadDetail(order.id, tx);
 }
 
-export async function checkout(userId: string, input: CheckoutInput): Promise<OrderDetailDto> {
+export async function checkout(userId: string, input: CheckoutInput): Promise<CheckoutSessionDto> {
   const existing = await orderRepo.findOrderByIdempotency(userId, input.idempotencyKey);
   if (existing) {
-    return loadDetail(existing.id);
+    return attachRazorpayOrderForCheckout(userId, existing.id);
   }
 
   const db = getDb();
   try {
-    return await db.transaction(async (tx) => createCheckoutOrder(userId, input, tx));
+    const created = await db.transaction(async (tx) => createCheckoutOrder(userId, input, tx));
+    return attachRazorpayOrderForCheckout(userId, created.id);
   } catch (error) {
     if (isUniqueViolation(error)) {
       const replay = await orderRepo.findOrderByIdempotency(userId, input.idempotencyKey);
-      if (replay) return loadDetail(replay.id);
+      if (replay) return attachRazorpayOrderForCheckout(userId, replay.id);
     }
     throw error;
   }
