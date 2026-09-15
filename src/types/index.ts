@@ -20,3 +20,6 @@ export type PaymentStatus =
   | "failed"
   | "refunded"
   | "partially_refunded";
+
+export type { CartDto, CartItemDto } from "./cart";
+export type { WishlistDto, WishlistItemDto } from "./wishlist";

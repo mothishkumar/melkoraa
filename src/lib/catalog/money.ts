@@ -25,3 +25,26 @@ export function formatMoney(value: string | null | undefined): string {
   if (!value) return "0.00";
   return toMoneyString(value);
 }
+
+/** Integer paise/cents. Catalog money is numeric(12,2); never use float arithmetic. */
+export function moneyToMinor(value: string | number): number {
+  const money = toMoneyString(value);
+  const [whole, fraction] = money.split(".");
+  return Number.parseInt(whole ?? "0", 10) * 100 + Number.parseInt(fraction ?? "0", 10);
+}
+
+export function minorToMoney(minor: number): string {
+  if (!Number.isInteger(minor) || !Number.isFinite(minor) || minor < 0) {
+    throw new Error("Invalid money value");
+  }
+  const whole = Math.trunc(minor / 100);
+  const fraction = String(minor % 100).padStart(2, "0");
+  return `${whole}.${fraction}`;
+}
+
+export function lineTotalMinor(unitMinor: number, quantity: number): number {
+  if (!Number.isInteger(unitMinor) || !Number.isInteger(quantity) || unitMinor < 0 || quantity < 0) {
+    throw new Error("Invalid money value");
+  }
+  return unitMinor * quantity;
+}
