@@ -1,5 +1,4 @@
 /**
- * Feature modules own product domain logic.
- * Catalog APIs and UI composition will land here in later phases.
+ * Product catalog domain. HTTP lives in /api/v1; persistence in repositories.
  */
 export {};
