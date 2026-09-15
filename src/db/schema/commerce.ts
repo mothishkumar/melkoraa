@@ -42,11 +42,15 @@ export const orders = pgTable(
     currency: text("currency").notNull().default("INR"),
     shippingAddressSnapshot: jsonb("shipping_address_snapshot").notNull(),
     billingAddressSnapshot: jsonb("billing_address_snapshot").notNull(),
+    idempotencyKey: text("idempotency_key"),
     createdAt: createdAtCol(),
     updatedAt: updatedAtCol(),
   },
   (table) => [
     uniqueIndex("orders_order_number_uidx").on(table.orderNumber),
+    uniqueIndex("orders_user_idempotency_uidx")
+      .on(table.userId, table.idempotencyKey)
+      .where(sql`${table.userId} IS NOT NULL AND ${table.idempotencyKey} IS NOT NULL`),
     index("orders_user_id_idx").on(table.userId),
     index("orders_status_idx").on(table.status),
     index("orders_created_at_idx").on(table.createdAt),

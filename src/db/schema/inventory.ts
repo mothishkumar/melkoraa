@@ -66,6 +66,9 @@ export const inventoryTransactions = pgTable(
       table.variantId,
       table.createdAt,
     ),
+    uniqueIndex("inventory_transactions_reference_uidx")
+      .on(table.referenceType, table.referenceId)
+      .where(sql`${table.referenceType} IS NOT NULL AND ${table.referenceId} IS NOT NULL`),
     check("inventory_transactions_quantity_nonzero", sql`${table.quantity} <> 0`),
   ],
 ).enableRLS();

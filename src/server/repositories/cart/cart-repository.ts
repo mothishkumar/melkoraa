@@ -200,3 +200,16 @@ export async function clearCartItemsForUser(userId: string, db?: CartDb) {
     .returning({ id: cartItems.id });
   return removed.length;
 }
+
+export async function convertActiveCart(userId: string, db?: CartDb) {
+  const cart = await findActiveCartByUserId(userId, db);
+  if (!cart) return null;
+  const client = cartDb(db);
+  await client.delete(cartItems).where(eq(cartItems.cartId, cart.id));
+  const [row] = await client
+    .update(carts)
+    .set({ status: "converted", updatedAt: new Date() })
+    .where(eq(carts.id, cart.id))
+    .returning();
+  return row ?? null;
+}
