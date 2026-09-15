@@ -9,11 +9,44 @@ export function isPostgresConnectionString(value: string): boolean {
 }
 
 /**
- * Supabase URI copies sometimes wrap the hostname in IPv6 brackets.
- * Brackets are only valid for IPv6 addresses, so strip them for hostnames.
+ * Supabase URI copies sometimes wrap hostnames in IPv6 brackets, and
+ * passwords often contain reserved characters that must be percent-encoded.
  */
 export function normalizePostgresConnectionString(value: string): string {
-  return value.trim().replace(/@\[([^\]:]+)\]:/g, "@$1:");
+  const trimmed = value.trim().replace(/@\[([^\]:]+)\]:/g, "@$1:");
+  return encodePostgresUserinfo(trimmed);
+}
+
+function encodePostgresUserinfo(url: string): string {
+  const schemeMatch = /^(postgres(?:ql)?:\/\/)/.exec(url);
+  if (!schemeMatch) {
+    return url;
+  }
+
+  const scheme = schemeMatch[1];
+  const rest = url.slice(scheme.length);
+  const at = rest.lastIndexOf("@");
+  if (at <= 0) {
+    return url;
+  }
+
+  const userinfo = rest.slice(0, at);
+  const hostAndPath = rest.slice(at + 1);
+  const colon = userinfo.indexOf(":");
+  if (colon === -1) {
+    return url;
+  }
+
+  const user = userinfo.slice(0, colon);
+  const rawPassword = userinfo.slice(colon + 1);
+  let password = rawPassword;
+  try {
+    password = decodeURIComponent(rawPassword);
+  } catch {
+    password = rawPassword;
+  }
+
+  return `${scheme}${user}:${encodeURIComponent(password)}@${hostAndPath}`;
 }
 
 export function requirePostgresConnectionString(
