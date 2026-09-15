@@ -10,10 +10,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { LogoutButton } from "@/features/auth";
 import { brand } from "@/lib/brand";
 import { storeNav } from "@/lib/navigation";
 
-export function StoreMobileNav() {
+export function StoreMobileNav({
+  isAuthenticated = false,
+  isStaff = false,
+}: {
+  isAuthenticated?: boolean;
+  isStaff?: boolean;
+}) {
   return (
     <Sheet>
       <SheetTrigger
@@ -41,9 +48,22 @@ export function StoreMobileNav() {
               {item.label}
             </Link>
           ))}
-          <Link href="/account" className="label-caps mt-8 py-2">
-            ACCOUNT
+          {isStaff ? (
+            <Link href="/admin" className="label-caps mt-8 py-2">
+              ADMIN
+            </Link>
+          ) : null}
+          <Link
+            href={isAuthenticated ? "/account" : "/login"}
+            className={`label-caps py-2 ${isStaff ? "" : "mt-8"}`}
+          >
+            {isAuthenticated ? "ACCOUNT" : "LOGIN"}
           </Link>
+          {isAuthenticated ? (
+            <div className="py-2">
+              <LogoutButton />
+            </div>
+          ) : null}
           <Link href="/cart" className="label-caps py-2">
             BAG
           </Link>

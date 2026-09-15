@@ -24,7 +24,7 @@ export default function AdminDashboardPage() {
         )}
       </div>
       <p className="mt-10 text-xs tracking-[0.18em] uppercase text-stone">
-        {brand.name} operations — Phase 1
+        {brand.name} operations — authenticated staff console. Catalog tools arrive in later phases.
       </p>
     </div>
   );

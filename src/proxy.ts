@@ -2,8 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { isProtectedPath } from "@/lib/auth/paths";
+import { hasStaffAccess } from "@/lib/auth/permissions";
+import { getSafeRedirectPath } from "@/lib/auth/redirect";
 import { AUTH_ROUTES } from "@/lib/auth/routes";
 import { isPublicSupabaseConfigured } from "@/lib/env/public";
+import { isUserRole } from "@/lib/auth/types";
 
 function copyCookies(from: NextResponse, to: NextResponse) {
   from.cookies.getAll().forEach((cookie) => {
@@ -50,10 +53,31 @@ export async function proxy(request: NextRequest) {
   if (isProtectedPath(pathname) && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = AUTH_ROUTES.login;
-    loginUrl.searchParams.set("next", pathname);
+    loginUrl.search = "";
+    const next = getSafeRedirectPath(`${pathname}${request.nextUrl.search}`, pathname);
+    loginUrl.searchParams.set("next", next);
     const redirectResponse = NextResponse.redirect(loginUrl);
     copyCookies(response, redirectResponse);
     return redirectResponse;
+  }
+
+  if (pathname === AUTH_ROUTES.unauthorized || pathname.startsWith("/admin")) {
+    if (user) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      const role = data?.role;
+      if (pathname.startsWith("/admin") && !hasStaffAccess(isUserRole(role) ? role : null)) {
+        const unauthorized = request.nextUrl.clone();
+        unauthorized.pathname = AUTH_ROUTES.unauthorized;
+        unauthorized.search = "";
+        const redirectResponse = NextResponse.redirect(unauthorized);
+        copyCookies(response, redirectResponse);
+        return redirectResponse;
+      }
+    }
   }
 
   return response;

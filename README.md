@@ -2,7 +2,7 @@
 
 Premium contemporary streetwear. **BUILD YOUR OWN IDENTITY.**
 
-This repository is a Next.js App Router storefront with an `/admin` surface. Phase 2 adds the PostgreSQL / Drizzle foundation (schema, RLS, seed). Catalog APIs, checkout, and live authentication are not implemented yet.
+This repository is a Next.js App Router storefront with an `/admin` surface. Phase 2 added the PostgreSQL / Drizzle foundation. Phase 3 adds Supabase Auth, sessions, and role-based route/API protection. Catalog APIs, checkout, and payments are not implemented yet.
 
 ## Stack
 
@@ -22,7 +22,7 @@ npm run db:seed
 npm run dev
 ```
 
-Fill `.env.local` with a Supabase project. The storefront UI still renders without credentials. Protected routes (`/account`, `/checkout`, `/admin`) redirect to `/login` only after public Supabase env vars are set.
+Protected routes (`/account`, `/checkout`, `/admin`) redirect to `/login` after public Supabase env vars are set. Customers cannot open `/admin`. See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) for Auth flows, roles, and security rules.
 
 Never put `SUPABASE_SERVICE_ROLE_KEY` in a `NEXT_PUBLIC_` variable. Never commit `.env` or `.env.local`.
 
@@ -34,6 +34,7 @@ See [DATABASE.md](./DATABASE.md) for schema, RLS, and seed details.
 | --- | --- |
 | `npm run dev` | Development server (port 4317) |
 | `npm run lint` | ESLint |
+| `npm run test` | Auth helper unit tests |
 | `npm run build` | Production build |
 | `npm run db:generate` | Generate Drizzle migrations from schema |
 | `npm run db:migrate` | Apply reviewed migrations |
