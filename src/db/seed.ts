@@ -18,6 +18,7 @@ import {
   products,
   productVariants,
   collections,
+  productImages,
 } from "./schema";
 
 const APPAREL_SIZES = [
@@ -39,6 +40,7 @@ type SeedProduct = {
   categorySlug: string;
   skuPrefix: string;
   kind: "apparel" | "cap";
+  imageFile: string;
 };
 
 const SEED_CATEGORIES = [
@@ -59,6 +61,7 @@ const SEED_PRODUCTS: SeedProduct[] = [
     categorySlug: "t-shirts",
     skuPrefix: "THE-BUILDER-TEE",
     kind: "apparel",
+    imageFile: "the-builder-oversized-t-shirt.jpg",
   },
   {
     slug: "the-builder-heavyweight-hoodie",
@@ -69,6 +72,7 @@ const SEED_PRODUCTS: SeedProduct[] = [
     categorySlug: "hoodies",
     skuPrefix: "THE-BUILDER-HOODIE",
     kind: "apparel",
+    imageFile: "the-builder-hoodie.jpg",
   },
   {
     slug: "the-builder-overshirt",
@@ -79,6 +83,7 @@ const SEED_PRODUCTS: SeedProduct[] = [
     categorySlug: "overshirts",
     skuPrefix: "THE-BUILDER-OVERSHIRT",
     kind: "apparel",
+    imageFile: "the-builder-overshirt.jpg",
   },
   {
     slug: "the-builder-cargo",
@@ -89,6 +94,7 @@ const SEED_PRODUCTS: SeedProduct[] = [
     categorySlug: "bottoms",
     skuPrefix: "THE-BUILDER-CARGO",
     kind: "apparel",
+    imageFile: "the-builder-cargo.jpg",
   },
   {
     slug: "the-builder-cap",
@@ -99,6 +105,7 @@ const SEED_PRODUCTS: SeedProduct[] = [
     categorySlug: "accessories",
     skuPrefix: "THE-BUILDER-CAP",
     kind: "cap",
+    imageFile: "the-builder-cap.jpg",
   },
 ];
 
@@ -248,6 +255,36 @@ export async function seedDatabase(connectionString: string) {
         });
 
       displayOrder += 1;
+
+      const storagePath = `seed/${product.imageFile}`;
+      const imageUrl = `/products/${product.imageFile}`;
+      const [existingImage] = await db
+        .select({ id: productImages.id })
+        .from(productImages)
+        .where(eq(productImages.storagePath, storagePath))
+        .limit(1);
+
+      if (existingImage) {
+        await db
+          .update(productImages)
+          .set({
+            productId: saved.id,
+            imageUrl,
+            altText: product.name,
+            imageType: "primary",
+            sortOrder: 0,
+          })
+          .where(eq(productImages.id, existingImage.id));
+      } else {
+        await db.insert(productImages).values({
+          productId: saved.id,
+          imageUrl,
+          storagePath,
+          altText: product.name,
+          imageType: "primary",
+          sortOrder: 0,
+        });
+      }
 
       const variants =
         product.kind === "cap"

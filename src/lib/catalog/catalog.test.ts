@@ -17,6 +17,7 @@ import {
 import { hasMinRole, hasStaffAccess, isAdmin, isManager } from "@/lib/auth/permissions";
 import { isUniqueViolation, uniqueConstraintMessage, fieldErrorsFromZod } from "@/server/api";
 import { paginationMeta } from "@/server/http";
+import { withLocalProductImages } from "@/lib/catalog/local-product-images";
 import { pickPrimaryImage } from "@/server/services/catalog/mappers";
 import { z } from "zod";
 
@@ -145,6 +146,33 @@ describe("image ordering", () => {
       },
     ]);
     expect(primary?.id).toBe("1");
+  });
+
+  it("fills DROP 001 product photos when the catalog has no images", () => {
+    const filled = withLocalProductImages("the-builder-cap", []);
+    expect(filled).toEqual([
+      {
+        id: "local-the-builder-cap",
+        url: "/products/the-builder-cap.jpg",
+        alt: "The Builder Cap",
+        sortOrder: 0,
+        imageType: "primary",
+        variantId: null,
+      },
+    ]);
+
+    const existing = [
+      {
+        id: "db-1",
+        url: "https://cdn.example/cap.jpg",
+        alt: null,
+        sortOrder: 0,
+        imageType: "primary" as const,
+        variantId: null,
+      },
+    ];
+    expect(withLocalProductImages("the-builder-cap", existing)).toBe(existing);
+    expect(withLocalProductImages("unknown-slug", [])).toEqual([]);
   });
 });
 

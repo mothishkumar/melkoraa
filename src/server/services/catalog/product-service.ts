@@ -1,4 +1,5 @@
 import { getDb } from "@/db";
+import { withLocalProductImages } from "@/lib/catalog/local-product-images";
 import { formatMoney } from "@/lib/catalog/money";
 import { isNewProduct } from "@/lib/catalog/rules";
 import {
@@ -87,7 +88,7 @@ export async function listPublicProducts(query: PublicProductQuery) {
   const availableByProduct = new Map(availability.map((row) => [row.productId, Boolean(row.available)]));
 
   const data: ProductListItem[] = rows.map((row) => {
-    const productImages = imagesByProduct.get(row.id) ?? [];
+    const productImages = withLocalProductImages(row.slug, imagesByProduct.get(row.id) ?? []);
     return {
       id: row.id,
       name: row.name,
@@ -129,7 +130,7 @@ export async function getPublicProductBySlug(slug: string): Promise<ProductDetai
     compareAtPrice: product.compareAtPrice ? formatMoney(product.compareAtPrice) : null,
     brand: product.brand,
     isNew: isNewProduct(product.createdAt),
-    images: images.map(mapImage),
+    images: withLocalProductImages(product.slug, images.map(mapImage)),
     variants: variants.filter((variant) => variant.isActive).map(mapVariant),
     categories: categoryRows.map(mapCategory),
     drop: drop ? mapDrop(drop) : null,

@@ -171,7 +171,7 @@ Buckets (created if `storage.buckets` exists):
 | `brand-assets` | yes | admin/manager |
 | `avatars` | yes | owner folder `auth.uid()/...` |
 
-No product files are uploaded in this phase.
+Product photos for DROP 001 live in `public/products/` and are linked from seed `product_images` rows.
 
 ## Seed strategy
 
@@ -179,10 +179,11 @@ No product files are uploaded in this phase.
 
 - Categories: t-shirts, hoodies, overshirts, bottoms, accessories
 - Collection + drop: DROP 001 — THE BUILDER
-- Five products with prices in INR
+- Five products with prices in INR and one description-free product photo each (`public/products/`)
 - Apparel sizes S–XXL with stock **15 / 45 / 53 / 30 / 7** (150 per product)
 - Cap ONE SIZE = 150
 - Initial `inventory_transactions` of type `purchase` with `reference_type = seed` (inserted once per variant)
+- Primary `product_images` rows pointing at `/products/*.jpg` (`storage_path` `seed/...`, upserted by path)
 
 Edition numbers are **not** assigned here.
 
