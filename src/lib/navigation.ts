@@ -1,23 +1,24 @@
 export const storeNav = [
-  { href: "/shop", label: "SHOP" },
-  { href: "/collection/the-builder", label: "COLLECTION" },
+  { href: "/drop-001", label: "DROP 001" },
+  { href: "/products", label: "SHOP" },
   { href: "/about", label: "ABOUT" },
-  { href: "/journal", label: "JOURNAL" },
 ] as const;
 
 export const storeFooterNav = {
   shop: [
-    { href: "/shop", label: "Shop" },
-    { href: "/collection/the-builder", label: "Drop 001" },
+    { href: "/products", label: "Shop" },
+    { href: "/drop-001", label: "Drop 001" },
     { href: "/wishlist", label: "Wishlist" },
   ],
   about: [
     { href: "/about", label: "The brand" },
-    { href: "/journal", label: "Journal" },
+    { href: "/privacy", label: "Privacy" },
+    { href: "/terms", label: "Terms" },
   ],
   help: [
     { href: "/account", label: "Account" },
     { href: "/cart", label: "Bag" },
+    { href: "/account/orders", label: "Orders" },
   ],
 } as const;
 

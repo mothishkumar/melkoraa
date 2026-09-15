@@ -148,8 +148,35 @@ export const payments = pgTable(
     uniqueIndex("payments_provider_payment_id_uidx")
       .on(table.provider, table.providerPaymentId)
       .where(sql`${table.providerPaymentId} IS NOT NULL`),
+    uniqueIndex("payments_provider_order_id_uidx")
+      .on(table.provider, table.providerOrderId)
+      .where(sql`${table.providerOrderId} IS NOT NULL`),
     check("payments_amount_non_negative", sql`${table.amount} >= 0`),
     check("payments_currency_len", sql`char_length(${table.currency}) = 3`),
+  ],
+).enableRLS();
+
+export const paymentEvents = pgTable(
+  "payment_events",
+  {
+    id: uuidPkCol(),
+    provider: text("provider").notNull(),
+    providerEventId: text("provider_event_id").notNull(),
+    eventType: text("event_type").notNull(),
+    paymentId: uuid("payment_id"),
+    createdAt: createdAtCol(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.paymentId],
+      foreignColumns: [payments.id],
+      name: "payment_events_payment_id_fkey",
+    }).onDelete("set null"),
+    uniqueIndex("payment_events_provider_event_uidx").on(
+      table.provider,
+      table.providerEventId,
+    ),
+    index("payment_events_payment_id_idx").on(table.paymentId),
   ],
 ).enableRLS();
 

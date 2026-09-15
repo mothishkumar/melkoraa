@@ -19,6 +19,7 @@ import {
   orderItems,
   orderStatusHistory,
   orders,
+  paymentEvents,
   payments,
   products,
   productVariants,
@@ -29,6 +30,10 @@ import * as orderRepo from "@/server/repositories/orders/order-repository";
 import { checkout } from "@/server/services/checkout/checkout-service";
 import { cancelCustomerOrder } from "@/server/services/orders/order-service";
 import { isUniqueViolation } from "@/server/api";
+import {
+  createMockPaymentProvider,
+  setPaymentProviderForTests,
+} from "@/server/payments/razorpay";
 
 function ensureDatabaseUrl(): string {
   loadProjectEnv();
@@ -248,14 +253,28 @@ describe.skipIf(!canRunAuthCheckout)("checkout with auth users", () => {
 
       const idempotencyKey = crypto.randomUUID();
       const input = { addressId: address!.id, idempotencyKey };
+      process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || "rzp_test_placeholder";
+      process.env.RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || "test_key_secret_placeholder";
+      process.env.RAZORPAY_WEBHOOK_SECRET =
+        process.env.RAZORPAY_WEBHOOK_SECRET || "test_webhook_secret_placeholder";
+      const mock = createMockPaymentProvider();
+      setPaymentProviderForTests(mock);
       const first = await checkout(userId, input);
       const second = await checkout(userId, input);
-      expect(first.id).toBe(second.id);
-      expect(first.orderNumber).toBe(second.orderNumber);
-      expect(first.paymentStatus).toBe("pending");
-      expect(first.status).toBe("pending");
-      expect(first.items[0]?.unitPrice).toBe("100.00");
+      expect(first.order.id).toBe(second.order.id);
+      expect(first.order.orderNumber).toBe(second.order.orderNumber);
+      expect(first.order.paymentStatus).toBe("pending");
+      expect(first.order.status).toBe("pending");
+      expect(first.payment.provider).toBe("razorpay");
+      expect(first.payment.razorpayOrderId).toBeTruthy();
+      expect(first.payment.keyId).toBeTruthy();
+      expect(first.payment.amountMinor).toBe(10000);
+      expect(first.payment.currency).toBe("INR");
+      expect(mock.created).toHaveLength(1);
+      expect(mock.created[0]?.amount).toBe(10000);
       expect(JSON.stringify(first)).not.toContain("onHand");
+      expect(JSON.stringify(first)).not.toContain("RAZORPAY_KEY_SECRET");
+      expect(JSON.stringify(first)).not.toContain("test_key_secret_placeholder");
 
       const [stock] = await db
         .select()
@@ -268,10 +287,11 @@ describe.skipIf(!canRunAuthCheckout)("checkout with auth users", () => {
       const activeCart = await cartRepo.findActiveCartByUserId(userId, db);
       expect(activeCart).toBeNull();
 
-      const [payment] = await db.select().from(payments).where(eq(payments.orderId, first.id));
+      const [payment] = await db.select().from(payments).where(eq(payments.orderId, first.order.id));
       expect(payment?.status).toBe("pending");
+      expect(payment?.providerOrderId).toBe(first.payment.razorpayOrderId);
 
-      const cancelled = await cancelCustomerOrder(userId, first.id);
+      const cancelled = await cancelCustomerOrder(userId, first.order.id);
       expect(cancelled.status).toBe("cancelled");
       const [after] = await db
         .select()
@@ -279,11 +299,16 @@ describe.skipIf(!canRunAuthCheckout)("checkout with auth users", () => {
         .where(eq(inventory.variantId, variantId));
       expect(after?.quantityReserved).toBe(0);
 
-      await expect(cancelCustomerOrder(userId, first.id)).rejects.toBeTruthy();
+      await expect(cancelCustomerOrder(userId, first.order.id)).rejects.toBeTruthy();
     } finally {
+      setPaymentProviderForTests(null);
       if (variantId) {
         const itemRows = await db.select().from(orderItems).where(eq(orderItems.variantId, variantId));
         for (const item of itemRows) {
+          const payRows = await db.select().from(payments).where(eq(payments.orderId, item.orderId));
+          for (const pay of payRows) {
+            await db.delete(paymentEvents).where(eq(paymentEvents.paymentId, pay.id));
+          }
           await db.delete(payments).where(eq(payments.orderId, item.orderId));
           await db.delete(orderStatusHistory).where(eq(orderStatusHistory.orderId, item.orderId));
           await db.delete(orderItems).where(eq(orderItems.orderId, item.orderId));

@@ -11,3 +11,5 @@ export * as cartService from "./cart/cart-service";
 export * as wishlistService from "./wishlist/wishlist-service";
 export * as checkoutService from "./checkout/checkout-service";
 export * as orderService from "./orders/order-service";
+export * as paymentService from "./payments/payment-service";
+export * as addressService from "./addresses/address-service";

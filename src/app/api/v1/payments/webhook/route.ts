@@ -1,5 +1,9 @@
-import { notImplemented } from "@/server/http";
+import { jsonError } from "@/server/http";
 
 export async function POST() {
-  return notImplemented("Payment webhook");
+  return jsonError(
+    "WEBHOOK_MOVED",
+    "Use POST /api/v1/webhooks/razorpay.",
+    404,
+  );
 }

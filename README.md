@@ -2,7 +2,7 @@
 
 Premium contemporary streetwear. **BUILD YOUR OWN IDENTITY.**
 
-This repository is a Next.js App Router storefront with an `/admin` surface. Phase 2 added the PostgreSQL / Drizzle foundation. Phase 3 adds Supabase Auth. Phase 4 adds the product catalog HTTP API. Phase 5 adds variant inventory. Phase 6 adds authenticated cart and wishlist APIs. Phase 7 adds server-authoritative checkout (pending payment, inventory reserve). Razorpay is not implemented yet.
+This repository is a Next.js App Router storefront with an `/admin` surface. Phase 9 connects the customer storefront (shop, bag, wishlist, checkout UI, Razorpay Checkout.js) to Phases 3–8.
 
 ## Stack
 
@@ -22,9 +22,9 @@ npm run db:seed
 npm run dev
 ```
 
-Protected routes (`/account`, `/checkout`, `/admin`) redirect to `/login` after public Supabase env vars are set. Customers cannot open `/admin`. See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md), [docs/CATALOG_API.md](./docs/CATALOG_API.md), [docs/INVENTORY_API.md](./docs/INVENTORY_API.md), [docs/CART_WISHLIST_API.md](./docs/CART_WISHLIST_API.md), and [docs/ORDERS_CHECKOUT_API.md](./docs/ORDERS_CHECKOUT_API.md).
+Protected routes (`/account`, `/checkout`, `/wishlist`, `/order`, `/admin`) redirect to `/login` after public Supabase env vars are set. Customers cannot open `/admin`. See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md), [docs/CATALOG_API.md](./docs/CATALOG_API.md), [docs/INVENTORY_API.md](./docs/INVENTORY_API.md), [docs/CART_WISHLIST_API.md](./docs/CART_WISHLIST_API.md), [docs/ORDERS_CHECKOUT_API.md](./docs/ORDERS_CHECKOUT_API.md), [docs/RAZORPAY_PAYMENTS.md](./docs/RAZORPAY_PAYMENTS.md), and [docs/CUSTOMER_STOREFRONT.md](./docs/CUSTOMER_STOREFRONT.md).
 
-Never put `SUPABASE_SERVICE_ROLE_KEY` in a `NEXT_PUBLIC_` variable. Never commit `.env` or `.env.local`.
+Never put `SUPABASE_SERVICE_ROLE_KEY` or Razorpay secrets in a `NEXT_PUBLIC_` variable. Never commit `.env` or `.env.local`.
 
 See [DATABASE.md](./DATABASE.md) for schema, RLS, and seed details.
 

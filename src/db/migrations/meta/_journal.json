@@ -22,6 +22,13 @@
       "when": 1789480997503,
       "tag": "0002_late_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789482999796,
+      "tag": "0003_mean_deathbird",
+      "breakpoints": true
     }
   ]
 }

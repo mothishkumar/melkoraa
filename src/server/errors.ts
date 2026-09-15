@@ -35,3 +35,7 @@ export function conflictError(code: string, message: string) {
 export function unprocessableError(code: string, message: string) {
   return new AppError(code, message, 422);
 }
+
+export function serviceUnavailableError(code: string, message: string) {
+  return new AppError(code, message, 503);
+}

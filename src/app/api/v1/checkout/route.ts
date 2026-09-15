@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   return handleApi(async () => {
     const body = checkoutBodySchema.parse(await readJsonBody(request));
-    const order = await checkout(auth.user.id, body);
-    return jsonOk(order, 201);
+    const session = await checkout(auth.user.id, body);
+    return jsonOk(session, 201);
   });
 }

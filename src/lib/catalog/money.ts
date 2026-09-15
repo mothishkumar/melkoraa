@@ -26,6 +26,19 @@ export function formatMoney(value: string | null | undefined): string {
   return toMoneyString(value);
 }
 
+/** Display rupees from catalog/order decimal strings. Never use float math. */
+export function formatInr(value: string | number): string {
+  const money = toMoneyString(value);
+  const [whole, fraction = "00"] = money.split(".");
+  const grouped = Number.parseInt(whole ?? "0", 10).toLocaleString("en-IN");
+  if (fraction === "00") return `₹${grouped}`;
+  return `₹${grouped}.${fraction}`;
+}
+
+export function formatInrFromMinor(minor: number): string {
+  return formatInr(minorToMoney(minor));
+}
+
 /** Integer paise/cents. Catalog money is numeric(12,2); never use float arithmetic. */
 export function moneyToMinor(value: string | number): number {
   const money = toMoneyString(value);

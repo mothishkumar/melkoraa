@@ -1,6 +1,8 @@
 export const protectedPathPrefixes = [
   "/account",
   "/checkout",
+  "/wishlist",
+  "/order",
   "/admin",
 ] as const;
 

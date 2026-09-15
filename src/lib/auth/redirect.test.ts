@@ -81,6 +81,8 @@ describe("protected paths", () => {
     expect(isProtectedPath("/admin")).toBe(true);
     expect(isProtectedPath("/admin/products")).toBe(true);
     expect(isProtectedPath("/checkout")).toBe(true);
+    expect(isProtectedPath("/wishlist")).toBe(true);
+    expect(isProtectedPath("/order/abc")).toBe(true);
     expect(isProtectedPath("/shop")).toBe(false);
     expect(isProtectedPath("/login")).toBe(false);
   });
