@@ -1,6 +1,9 @@
-/**
- * Drizzle schema entry.
- * Catalog, inventory, orders, and auth tables are introduced in Phase 3.
- * Do not query from UI components.
- */
-export {};
+export * from "./enums";
+export * from "./helpers";
+export * from "./profiles";
+export * from "./catalog";
+export * from "./inventory";
+export * from "./cart";
+export * from "./commerce";
+export * from "./audit";
+export * from "./relations";

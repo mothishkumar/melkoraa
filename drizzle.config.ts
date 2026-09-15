@@ -2,7 +2,7 @@ import { defineConfig } from "drizzle-kit";
 
 /**
  * Drizzle is configured for Supabase PostgreSQL.
- * Schema modules will be added in a later phase.
+ * Generate with `npm run db:generate`, review SQL, then `npm run db:migrate`.
  * Never apply destructive migrations automatically.
  */
 export default defineConfig({
