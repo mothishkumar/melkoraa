@@ -18,7 +18,8 @@ npm run db:migrate
 npm run db:seed
 ```
 
-`DATABASE_URL` must be the Supabase Postgres connection string (server-only).
+`DATABASE_URL` must be the Supabase **transaction pooler** URI (server-only, port 6543).  
+`DIRECT_DATABASE_URL` must be the **direct** Postgres URI (port 5432) used by `npm run db:migrate`.
 
 ## ERD (relationships)
 

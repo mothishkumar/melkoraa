@@ -13,6 +13,7 @@ const serverEnvSchema = z.object({
     .string()
     .min(1, "SUPABASE_SERVICE_ROLE_KEY is required on the server"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required on the server"),
+  DIRECT_DATABASE_URL: z.string().optional(),
   NODE_ENV: z.enum(["development", "test", "production"]).optional(),
 });
 
@@ -42,6 +43,7 @@ export function getServerEnv(): ServerEnv {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_DATABASE_URL: process.env.DIRECT_DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   });
 

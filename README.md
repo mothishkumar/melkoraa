@@ -16,7 +16,7 @@ This repository is a Next.js App Router storefront with an `/admin` surface. Pha
 ```bash
 npm install
 cp .env.example .env.local
-# Fill DATABASE_URL and Supabase keys
+# Fill DATABASE_URL (transaction pooler) and DIRECT_DATABASE_URL (direct) in .env.local
 npm run db:migrate
 npm run db:seed
 npm run dev

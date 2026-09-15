@@ -2,6 +2,12 @@ import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
+import { loadProjectEnv } from "@/lib/env/load";
+import {
+  requirePostgresConnectionString,
+  runtimePostgresOptions,
+} from "@/lib/env/postgres";
+
 import {
   categories,
   dropProducts,
@@ -125,7 +131,8 @@ async function upsertCategory(
 }
 
 export async function seedDatabase(connectionString: string) {
-  const client = postgres(connectionString, { prepare: false, max: 1 });
+  const url = requirePostgresConnectionString(connectionString, "DATABASE_URL");
+  const client = postgres(url, runtimePostgresOptions);
   const db = drizzle(client);
 
   try {
@@ -331,12 +338,9 @@ export async function seedDatabase(connectionString: string) {
 }
 
 async function main() {
+  loadProjectEnv();
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL is required to seed. Copy .env.example to .env.local.");
-  }
-
-  await seedDatabase(databaseUrl);
+  await seedDatabase(requirePostgresConnectionString(databaseUrl, "DATABASE_URL"));
   console.info("Seed complete: DROP 001 catalog is upserted.");
 }
 
