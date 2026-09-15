@@ -11,7 +11,11 @@ export async function GET(request: Request) {
 
   return handleApi(async () => {
     const query = orderListQuerySchema.parse(searchParamsRecord(new URL(request.url)));
-    const result = await listAdminOrders(query.page, query.pageSize);
+    const result = await listAdminOrders(query.page, query.pageSize, {
+      status: query.status,
+      paymentStatus: query.paymentStatus,
+      search: query.search,
+    });
     return jsonPage(result.data, result.pagination);
   });
 }

@@ -98,4 +98,32 @@ export type AdminProductListItem = {
   brand: string;
   createdAt: string;
   updatedAt: string;
+  primaryImage: PublicImage | null;
+  categories: PublicCategory[];
+  variantCount: number;
+};
+
+export type AdminVariant = PublicVariant & {
+  isActive: boolean;
+};
+
+export type AdminProductDetail = {
+  id: string;
+  name: string;
+  slug: string;
+  shortDescription: string | null;
+  description: string | null;
+  status: ProductStatus;
+  basePrice: string;
+  compareAtPrice: string | null;
+  brand: string;
+  seoTitle: string | null;
+  seoDescription: string | null;
+  createdAt: string;
+  updatedAt: string;
+  images: PublicImage[];
+  variants: AdminVariant[];
+  categories: PublicCategory[];
+  drop: PublicDropSummary | null;
+  edition: PublicEdition | null;
 };

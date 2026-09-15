@@ -6,7 +6,7 @@ export default function AdminSettingsPage() {
   return (
     <AdminPlaceholder
       title="Settings"
-      description="Store settings, storage buckets, and environment status will surface here. Secrets are never rendered."
+      description="Environment secrets stay on the server. There is no settings UI for Razorpay keys, database URLs, or service-role credentials."
     />
   );
 }

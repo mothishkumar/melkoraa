@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray, type SQL } from "drizzle-orm";
 
 import { addresses, orderItems, orderStatusHistory, orders } from "@/db/schema";
 import { orderDb, type OrderDb } from "@/server/repositories/orders/db";
@@ -130,17 +130,84 @@ export async function listOrdersForUser(
   return { rows, total: Number(totals[0]?.value ?? 0) };
 }
 
-export async function listOrdersAdmin(page: number, pageSize: number, db?: OrderDb) {
+export async function listOrderStatusHistory(orderId: string, db?: OrderDb) {
   const client = orderDb(db);
-  const offset = (page - 1) * pageSize;
+  return client
+    .select({
+      id: orderStatusHistory.id,
+      oldStatus: orderStatusHistory.oldStatus,
+      newStatus: orderStatusHistory.newStatus,
+      notes: orderStatusHistory.notes,
+      createdAt: orderStatusHistory.createdAt,
+    })
+    .from(orderStatusHistory)
+    .where(eq(orderStatusHistory.orderId, orderId))
+    .orderBy(desc(orderStatusHistory.createdAt));
+}
+
+export async function countOrdersByStatus(db?: OrderDb) {
+  const client = orderDb(db);
+  return client
+    .select({
+      status: orders.status,
+      value: count(),
+    })
+    .from(orders)
+    .groupBy(orders.status);
+}
+
+export async function countOrdersByPaymentStatus(db?: OrderDb) {
+  const client = orderDb(db);
+  return client
+    .select({
+      paymentStatus: orders.paymentStatus,
+      value: count(),
+    })
+    .from(orders)
+    .groupBy(orders.paymentStatus);
+}
+
+export async function countOrdersForUsers(userIds: string[], db?: OrderDb) {
+  if (userIds.length === 0) return [];
+  const client = orderDb(db);
+  return client
+    .select({
+      userId: orders.userId,
+      value: count(),
+    })
+    .from(orders)
+    .where(inArray(orders.userId, userIds))
+    .groupBy(orders.userId);
+}
+
+export async function listOrdersAdmin(
+  filters: {
+    page: number;
+    pageSize: number;
+    status?: typeof orders.$inferSelect.status;
+    paymentStatus?: typeof orders.$inferSelect.paymentStatus;
+    search?: string;
+  },
+  db?: OrderDb,
+) {
+  const client = orderDb(db);
+  const offset = (filters.page - 1) * filters.pageSize;
+  const conditions: SQL[] = [];
+  if (filters.status) conditions.push(eq(orders.status, filters.status));
+  if (filters.paymentStatus) conditions.push(eq(orders.paymentStatus, filters.paymentStatus));
+  if (filters.search) {
+    conditions.push(ilike(orders.orderNumber, `%${filters.search}%`));
+  }
+  const where = conditions.length ? and(...conditions) : undefined;
   const [rows, totals] = await Promise.all([
     client
       .select()
       .from(orders)
+      .where(where)
       .orderBy(desc(orders.createdAt), desc(orders.id))
-      .limit(pageSize)
+      .limit(filters.pageSize)
       .offset(offset),
-    client.select({ value: count() }).from(orders),
+    client.select({ value: count() }).from(orders).where(where),
   ]);
   return { rows, total: Number(totals[0]?.value ?? 0) };
 }

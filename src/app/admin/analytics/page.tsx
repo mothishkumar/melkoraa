@@ -6,7 +6,7 @@ export default function AdminAnalyticsPage() {
   return (
     <AdminPlaceholder
       title="Analytics"
-      description="Revenue and customer charts require order data."
+      description="Revenue analytics are not implemented. The operations dashboard shows catalog, inventory, and order counts only."
     />
   );
 }
