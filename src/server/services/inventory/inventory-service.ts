@@ -133,15 +133,19 @@ async function mutate(
     row: NonNullable<Awaited<ReturnType<typeof inventoryRepo.findInventoryByVariantId>>>;
     ledger: Parameters<typeof inventoryRepo.insertLedger>[0];
   }>,
+  db?: InventoryDb,
 ) {
-  await requireVariant(variantId);
-  await requireInventory(variantId);
-  const db = getDb();
-  const result = await db.transaction(async (tx) => {
+  const apply = async (tx: InventoryDb) => {
+    await requireVariant(variantId, tx);
+    await requireInventory(variantId, tx);
     const { row, ledger } = await run(tx);
     await inventoryRepo.insertLedger(ledger, tx);
     return row;
-  });
+  };
+
+  // Checkout passes its outer transaction so reserve/release share one commit.
+  // Admin APIs keep the existing per-call transaction (no nested txs).
+  const result = db ? await apply(db) : await getDb().transaction(apply);
   logger.info(operation, { actorId, resourceId: variantId });
   return mapSnapshot(result);
 }
@@ -150,6 +154,7 @@ export async function adjustInventory(
   variantId: string,
   delta: number,
   meta: MutationMeta,
+  db?: InventoryDb,
 ) {
   return mutate(variantId, meta.actorId, "inventory.adjusted", async (tx) => {
     const row = await inventoryRepo.atomicAdjustOnHand(variantId, delta, tx);
@@ -170,13 +175,14 @@ export async function adjustInventory(
         notes: meta.notes ?? null,
       },
     };
-  });
+  }, db);
 }
 
 export async function reserveInventory(
   variantId: string,
   quantity: number,
   meta: MutationMeta,
+  db?: InventoryDb,
 ) {
   return mutate(variantId, meta.actorId, "inventory.reserved", async (tx) => {
     const row = await inventoryRepo.atomicReserve(variantId, quantity, tx);
@@ -197,13 +203,14 @@ export async function reserveInventory(
         notes: meta.notes ?? null,
       },
     };
-  });
+  }, db);
 }
 
 export async function releaseInventory(
   variantId: string,
   quantity: number,
   meta: MutationMeta,
+  db?: InventoryDb,
 ) {
   return mutate(variantId, meta.actorId, "inventory.released", async (tx) => {
     const row = await inventoryRepo.atomicRelease(variantId, quantity, tx);
@@ -224,13 +231,14 @@ export async function releaseInventory(
         notes: meta.notes ?? null,
       },
     };
-  });
+  }, db);
 }
 
 export async function confirmInventorySale(
   variantId: string,
   quantity: number,
   meta: MutationMeta,
+  db?: InventoryDb,
 ) {
   return mutate(variantId, meta.actorId, "inventory.sale_confirmed", async (tx) => {
     const row = await inventoryRepo.atomicConfirmSale(variantId, quantity, tx);
@@ -251,5 +259,5 @@ export async function confirmInventorySale(
         notes: meta.notes ?? null,
       },
     };
-  });
+  }, db);
 }

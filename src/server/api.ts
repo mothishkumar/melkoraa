@@ -26,6 +26,8 @@ export function uniqueConstraintMessage(error: unknown, fallback: string): strin
   if (text.includes("slug")) return "A record with this slug already exists.";
   if (text.includes("sku")) return "A variant with this SKU already exists.";
   if (text.includes("wishlist")) return "This product is already in your wishlist.";
+  if (text.includes("order_number")) return "That order number is already in use.";
+  if (text.includes("idempotency")) return "A checkout with this key already exists.";
   return fallback;
 }
 

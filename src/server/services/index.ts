@@ -9,3 +9,5 @@ export * as catalogDropService from "./catalog/drop-service";
 export * as inventoryService from "./inventory/inventory-service";
 export * as cartService from "./cart/cart-service";
 export * as wishlistService from "./wishlist/wishlist-service";
+export * as checkoutService from "./checkout/checkout-service";
+export * as orderService from "./orders/order-service";

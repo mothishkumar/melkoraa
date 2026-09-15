@@ -1,0 +1,3 @@
+ALTER TABLE "orders" ADD COLUMN "idempotency_key" text;--> statement-breakpoint
+CREATE UNIQUE INDEX "inventory_transactions_reference_uidx" ON "inventory_transactions" USING btree ("reference_type","reference_id") WHERE "inventory_transactions"."reference_type" IS NOT NULL AND "inventory_transactions"."reference_id" IS NOT NULL;--> statement-breakpoint
+CREATE UNIQUE INDEX "orders_user_idempotency_uidx" ON "orders" USING btree ("user_id","idempotency_key") WHERE "orders"."user_id" IS NOT NULL AND "orders"."idempotency_key" IS NOT NULL;
