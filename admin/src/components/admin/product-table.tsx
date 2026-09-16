@@ -1,0 +1,111 @@
+"use client";
+
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
+import { useAdminRefresh } from "@/hooks/use-admin-refresh";
+import { useState } from "react";
+
+import { StatusPill } from "@/components/admin/status-pill";
+import { ConfirmAction } from "@/components/admin/confirm-action";
+import { AdminNotice } from "@/components/admin/page-header";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useAdminAccess } from "@/features/admin/access";
+import { archiveAdminProductRequest } from "@/lib/api/admin";
+import { userFacingApiMessage } from "@/lib/api/client";
+import { formatInr } from "@/lib/catalog/money";
+import type { AdminProductListItem } from "@/types/catalog";
+
+export function ProductTable({ products }: { products: AdminProductListItem[] }) {
+  const navigate = useNavigate()
+  const { refresh } = useAdminRefresh();
+  const { canMutate } = useAdminAccess();
+  const [notice, setNotice] = useState<string | null>(null);
+
+  return (
+    <div className="space-y-3">
+      <AdminNotice message={notice} tone="error" />
+      <div className="admin-panel overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Product</TableHead>
+              <TableHead>Slug</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Variants</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    {product.primaryImage?.url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.primaryImage.url}
+                        alt={product.primaryImage.alt || product.name}
+                        className="size-10 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="size-10 rounded-lg bg-zinc-100" />
+                    )}
+                    <div>
+                      <Link to={`/products/${product.id}`} className="font-medium hover:underline">
+                        {product.name}
+                      </Link>
+                      <p className="text-xs text-muted-foreground">
+                        {product.categories.map((category) => category.name).join(", ") || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="font-mono text-xs">{product.slug}</TableCell>
+                <TableCell>
+                  <StatusPill value={product.status} />
+                </TableCell>
+                <TableCell className="tabular-nums">{formatInr(product.basePrice)}</TableCell>
+                <TableCell>{product.variantCount}</TableCell>
+                <TableCell className="whitespace-nowrap text-xs">
+                  {new Date(product.createdAt).toLocaleDateString("en-IN")}
+                </TableCell>
+                <TableCell className="text-right">
+                  {canMutate && product.status !== "archived" ? (
+                    <ConfirmAction
+                      label="Archive"
+                      title="Archive this product?"
+                      description="The product will no longer appear in the public catalog. This uses the existing archive API."
+                      confirmLabel="Archive product"
+                      variant="destructive"
+                      onConfirm={async () => {
+                        try {
+                          await archiveAdminProductRequest(product.id);
+                          refresh();
+                        } catch (error) {
+                          setNotice(userFacingApiMessage(error));
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Link to={`/products/${product.id}`} className="text-sm hover:underline">
+                      View
+                    </Link>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}

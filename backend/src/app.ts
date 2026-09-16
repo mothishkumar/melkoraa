@@ -2,6 +2,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 
+import { adminRouter } from "./routes/admin/index.js";
 import { addressesRouter } from "./routes/addresses.js";
 import { authRouter } from "./routes/auth.js";
 import { cartRouter } from "./routes/cart.js";
@@ -19,11 +20,14 @@ import { requireServerEnv } from "./middleware/require-server-env.js";
 
 export function createApp() {
   const app = express();
-  const corsOrigin = process.env.CORS_ORIGIN ?? "http://localhost:5173";
+  const corsOrigins = [
+    process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174",
+  ];
 
   app.use(
     cors({
-      origin: corsOrigin,
+      origin: corsOrigins,
       credentials: true,
     }),
   );
@@ -46,6 +50,7 @@ export function createApp() {
   api.use("/checkout", requireServerEnv, checkoutRouter);
   api.use("/payments", requireServerEnv, paymentsRouter);
   api.use("/orders", requireServerEnv, ordersRouter);
+  api.use("/admin", requireServerEnv, adminRouter);
 
   app.use("/api/v1", api);
 

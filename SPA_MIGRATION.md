@@ -2,9 +2,9 @@
 
 **Branch:** `melkoraa_spa`  
 **Date:** 2026-09-16  
-**Status:** In progress (Phase 1 complete; Phases 2–12 implemented in `frontend/` + `backend/`)
+**Status:** In progress (Phase 1 + Phase 2 admin SPA complete in `frontend/`, `backend/`, `admin/`)
 
-The existing Next.js 16 App Router application under `src/` remains **untouched** except `tsconfig.json` excludes for `frontend/` and `backend/`. Production Vercel deployment continues to serve the Next app.
+The existing Next.js 16 App Router application under `src/` remains **untouched** except `tsconfig.json` excludes for `frontend/`, `backend/`, and `admin/`. Production Vercel deployment continues to serve the Next app (including `/admin`).
 
 ---
 
@@ -177,9 +177,34 @@ Admin APIs deferred to a later SPA phase; Next `/admin` remains authoritative.
 - `credentials: 'include'` fetch wrapper
 - `AuthProvider` from `/api/v1/auth/me`
 
+## Phase 2 — Admin SPA (`admin/`)
+
+| Next route | Admin SPA route |
+| --- | --- |
+| `/admin` | `/` (dashboard) |
+| `/admin/products` | `/products` |
+| `/admin/products/new` | `/products/new` |
+| `/admin/products/[id]` | `/products/:id` |
+| `/admin/inventory` | `/inventory` |
+| `/admin/orders` | `/orders` |
+| `/admin/orders/[id]` | `/orders/:id` |
+| `/admin/customers` | `/customers` |
+| `/admin/drops` | `/drops` |
+| `/admin/drops/[id]` | `/drops/:id` |
+| `/admin/collections` | `/collections` |
+| `/admin/audit-logs` | `/audit-logs` |
+
+Express admin API: `/api/v1/admin/*` — 39 handlers mirrored from Next (dashboard, products CRUD, variants, images, categories, inventory, orders, customers, drops, collections, audit-logs; coupons stub 501).
+
+Roles unchanged: `customer`, `staff`, `manager`, `admin`. Staff read; manager mutations; admin-only category DELETE.
+
+Dev: `cd admin && npm run dev` (port **5174**). `ADMIN_CORS_ORIGIN` in `backend/.env.example`.
+
+---
+
 ## Phase 12 — Integration + verification
 
-- `tsconfig.json` exclude `frontend`, `backend`
+- `tsconfig.json` exclude `frontend`, `backend`, `admin`
 - Lint, typecheck, build both packages
 - E2E journey: HOME → DROP 01 → PRODUCT → ADD TO BAG → CART → CHECKOUT → PAYMENT → ORDER
 
@@ -206,8 +231,12 @@ Admin APIs deferred to a later SPA phase; Next `/admin` remains authoritative.
 cd backend && cp .env.example .env   # fill from root .env
 npm install && npm run dev
 
-# Terminal 2 — SPA (port 5173)
+# Terminal 2 — Customer SPA (port 5173)
 cd frontend && cp .env.example .env
+npm install && npm run dev
+
+# Terminal 3 — Admin SPA (port 5174)
+cd admin && cp .env.example .env
 npm install && npm run dev
 
 # Next.js (unchanged, port 4317)
@@ -219,6 +248,7 @@ npm run dev
 ```bash
 cd backend && npm run build
 cd frontend && npm run build
+cd admin && npm run build
 ```
 
 ---

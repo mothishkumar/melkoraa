@@ -18,17 +18,19 @@
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.45.2",
     "express": "^4.21.2",
+    "multer": "^2.4.0",
     "postgres": "^3.4.9",
     "razorpay": "^2.9.8",
     "server-only": "file:./vendor/server-only",
     "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@types/react": "^19",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/multer": "^2.2.0",
     "@types/node": "^20",
+    "@types/react": "^19",
     "tsx": "^4.23.13",
     "typescript": "^5"
   }

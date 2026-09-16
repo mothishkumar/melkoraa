@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 
 import { fieldErrorsFromZod, isCheckViolation, isUniqueViolation, uniqueConstraintMessage } from "@/server/api";
 import { logger } from "@/lib/logger";
+import { AppError } from "@/server/errors";
 
 import { sendError } from "./express-response.js";
 
@@ -16,6 +17,9 @@ export async function handleRoute(
       return res.status(result.status ?? 200).json(result.body);
     }
   } catch (error) {
+    if (error instanceof AppError) {
+      return sendError(res, error.code, error.message, error.status, error.details);
+    }
     if (error instanceof ZodError) {
       const details = fieldErrorsFromZod(error);
       return sendError(res, "VALIDATION_ERROR", "Invalid request.", 400, details);
