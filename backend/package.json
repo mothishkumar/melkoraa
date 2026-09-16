@@ -7,6 +7,7 @@
     "dev": "tsx watch --import ./src/register.mjs src/index.ts",
     "start": "tsx --import ./src/register.mjs src/index.ts",
     "build": "tsc --noEmit",
+    "vercel-build": "node scripts/bundle-vercel-api.mjs",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },
@@ -22,9 +23,11 @@
     "postgres": "^3.4.9",
     "razorpay": "^2.9.8",
     "server-only": "file:./vendor/server-only",
+    "serverless-http": "^3.2.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "@eslint/js": "^10.0.1",
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
