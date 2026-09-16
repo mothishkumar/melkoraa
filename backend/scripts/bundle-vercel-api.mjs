@@ -31,7 +31,7 @@ await esbuild.build({
   bundle: true,
   platform: "node",
   target: "node20",
-  format: "esm",
+  format: "cjs",
   packages: "external",
   alias: {
     "@/lib/supabase/server": resolve(backendRoot, "src/shims/supabase-server.ts"),
