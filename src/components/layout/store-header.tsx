@@ -1,9 +1,9 @@
 import Link from "next/link";
 
+import { BrandMark } from "@/components/layout/brand-mark";
 import { StoreMobileNav } from "@/components/layout/store-mobile-nav";
 import { BagLink } from "@/components/layout/bag-link";
 import { LogoutButton } from "@/features/auth";
-import { brand } from "@/lib/brand";
 import { storeNav } from "@/lib/navigation";
 
 export function StoreHeader({
@@ -16,12 +16,7 @@ export function StoreHeader({
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur-md">
       <div className="mx-auto flex h-[4.25rem] max-w-[1600px] items-center justify-between gap-3 px-4 md:h-20 md:px-8">
-        <Link
-          href="/"
-          className="editorial-display shrink-0 text-[0.95rem] tracking-[0.42em] md:text-lg"
-        >
-          {brand.name}
-        </Link>
+        <BrandMark className="text-[0.95rem] text-off-white md:text-lg" />
 
         <nav className="hidden items-center gap-9 md:flex" aria-label="Primary">
           {storeNav.map((item) => (

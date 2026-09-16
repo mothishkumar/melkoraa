@@ -139,10 +139,9 @@ describe("auth error mapping", () => {
     );
   });
 
-  it("maps rate limits and unverified email", () => {
-    expect(mapAuthError({ status: 429 })).toBe(AUTH_MESSAGES.rateLimited);
-    expect(mapAuthError({ code: "email_not_confirmed" })).toBe(
-      AUTH_MESSAGES.unverifiedEmail,
+  it("maps already confirmed email copy", () => {
+    expect(mapAuthError({ message: "Email already confirmed" })).toBe(
+      AUTH_MESSAGES.alreadyVerified,
     );
   });
 });

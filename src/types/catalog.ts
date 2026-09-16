@@ -70,6 +70,7 @@ export type ProductListItem = {
   available: boolean;
   primaryImage: PublicImage | null;
   categories: PublicCategory[];
+  variants: PublicVariant[];
 };
 
 export type ProductDetail = {

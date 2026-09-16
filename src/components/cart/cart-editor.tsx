@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import {
@@ -15,7 +14,7 @@ import { useUiStore } from "@/hooks/use-ui-store";
 import type { CartDto } from "@/types/cart";
 
 export function CartEditor({ cart }: { cart: CartDto }) {
-  const router = useRouter();
+  const [bag, setBag] = useState(cart);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
 
@@ -24,8 +23,8 @@ export function CartEditor({ cart }: { cart: CartDto }) {
     setNotice(null);
     try {
       const next = await fn();
+      setBag(next);
       useUiStore.setState({ bagCount: next.itemCount });
-      router.refresh();
     } catch (error) {
       setNotice(userFacingApiMessage(error));
     } finally {
@@ -33,7 +32,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
     }
   }
 
-  if (cart.items.length === 0) {
+  if (bag.items.length === 0) {
     return (
       <div className="py-20 text-center">
         <p className="editorial-display text-4xl">YOUR CART IS EMPTY.</p>
@@ -47,7 +46,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
   return (
     <div className="grid gap-12 lg:grid-cols-12">
       <ul className="space-y-8 lg:col-span-8">
-        {cart.items.map((item) => (
+        {bag.items.map((item) => (
           <li key={item.variantId} className="flex flex-col gap-4 border-b border-black/10 pb-8 sm:flex-row sm:justify-between">
             <div>
               <Link href={`/products/${item.productSlug}`} className="text-sm uppercase tracking-[0.08em]">
@@ -110,7 +109,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
         <p className="label-caps">Summary</p>
         <p className="mt-4 flex justify-between text-sm">
           <span>Estimated subtotal</span>
-          <span>{formatInr(cart.subtotal)}</span>
+          <span>{formatInr(bag.subtotal)}</span>
         </p>
         <p className="mt-3 text-xs leading-6 text-stone">
           Final total is calculated on the server at checkout. Shipping and tax are not applied in this phase.

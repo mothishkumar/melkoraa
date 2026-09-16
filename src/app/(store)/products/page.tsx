@@ -48,7 +48,12 @@ export default async function ProductsPage({
         <h1 className="editorial-display mt-4 text-center text-4xl md:text-6xl">Shop</h1>
         <ProductFilters categories={categories.data} current={current} basePath="/products" />
         <div className="mt-10">
-          <ProductGrid products={products} wishlistedIds={wishlisted} showWishlist={Boolean(user)} />
+          <ProductGrid
+            products={products}
+            wishlistedIds={wishlisted}
+            showWishlist={Boolean(user)}
+            isAuthenticated={Boolean(user)}
+          />
         </div>
         <Pagination pagination={pagination} basePath="/products" searchParams={current} />
       </div>

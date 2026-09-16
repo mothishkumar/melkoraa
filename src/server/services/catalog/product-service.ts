@@ -68,6 +68,7 @@ export async function listPublicProducts(query: PublicProductQuery) {
   const images = await productsRepo.listImagesForProducts(ids);
   const categoryRows = await productsRepo.listCategoriesForProducts(ids);
   const availability = await productsRepo.listAvailabilityForProducts(ids);
+  const variantRows = await productsRepo.listVariantsForProducts(ids);
 
   const imagesByProduct = new Map<string, ReturnType<typeof mapImage>[]>();
   for (const image of images) {
@@ -85,6 +86,14 @@ export async function listPublicProducts(query: PublicProductQuery) {
 
   const availableByProduct = new Map(availability.map((row) => [row.productId, Boolean(row.available)]));
 
+  const variantsByProduct = new Map<string, ReturnType<typeof mapVariant>[]>();
+  for (const row of variantRows) {
+    if (row.isActive === false) continue;
+    const list = variantsByProduct.get(row.productId) ?? [];
+    list.push(mapVariant(row));
+    variantsByProduct.set(row.productId, list);
+  }
+
   const data: ProductListItem[] = rows.map((row) => {
     const productImages = imagesByProduct.get(row.id) ?? [];
     return {
@@ -98,6 +107,7 @@ export async function listPublicProducts(query: PublicProductQuery) {
       available: availableByProduct.get(row.id) ?? false,
       primaryImage: pickPrimaryImage(productImages),
       categories: categoriesByProduct.get(row.id) ?? [],
+      variants: variantsByProduct.get(row.id) ?? [],
     };
   });
 

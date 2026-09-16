@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createAddressRequest } from "@/lib/api/addresses";
+import { getCartRequest } from "@/lib/api/cart";
 import { checkoutRequest, verifyPaymentRequest } from "@/lib/api/checkout";
 import { ApiClientError, userFacingApiMessage } from "@/lib/api/client";
 import {
@@ -15,6 +16,7 @@ import {
   isVerifiedPaid,
 } from "@/features/checkout/contract";
 import { formatInr, formatInrFromMinor } from "@/lib/catalog/money";
+import { useUiStore } from "@/hooks/use-ui-store";
 import type { AddressDto } from "@/types/addresses";
 import type { CartDto } from "@/types/cart";
 
@@ -72,6 +74,9 @@ export function CheckoutClient({
   addresses: AddressDto[];
 }) {
   const router = useRouter();
+  const [bag, setBag] = useState<CartDto | null>(null);
+  const [bagReady, setBagReady] = useState(false);
+  const [addressList, setAddressList] = useState(addresses);
   const [addressId, setAddressId] = useState(addresses.find((row) => row.isDefault)?.id ?? addresses[0]?.id ?? "");
   const [state, setState] = useState<PayState>("idle");
   const [notice, setNotice] = useState<string | null>(null);
@@ -87,9 +92,34 @@ export function CheckoutClient({
     country: "IN",
   });
 
-  const estimate = useMemo(() => formatInr(cart.subtotal), [cart.subtotal]);
+  const estimate = useMemo(() => formatInr((bag ?? cart).subtotal), [bag, cart]);
 
-  if (cart.items.length === 0) {
+  useEffect(() => {
+    let cancelled = false;
+    getCartRequest()
+      .then((data) => {
+        if (cancelled) return;
+        setBag(data);
+        useUiStore.setState({ bagCount: data.itemCount });
+        setBagReady(true);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setBag(cart);
+        setBagReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [cart]);
+
+  const liveCart = bag ?? cart;
+
+  if (!bagReady && cart.items.length === 0) {
+    return <p className="text-sm text-stone">Checking your bag…</p>;
+  }
+
+  if (liveCart.items.length === 0) {
     return (
       <p className="text-sm text-stone">
         Your bag is empty.{" "}
@@ -108,6 +138,15 @@ export function CheckoutClient({
     setState("preparing");
     setNotice("Preparing payment");
     try {
+      const authoritative = await getCartRequest();
+      setBag(authoritative);
+      useUiStore.setState({ bagCount: authoritative.itemCount });
+      if (authoritative.items.length === 0) {
+        setBagReady(true);
+        setState("idle");
+        setNotice(null);
+        return;
+      }
       const idempotencyKey = readIdempotency(userId);
       const session = await checkoutRequest(addressId, idempotencyKey);
       if (!session.payment.razorpayOrderId || !session.payment.keyId) {
@@ -191,7 +230,7 @@ export function CheckoutClient({
         <section>
           <h2 className="editorial-display text-2xl">Address</h2>
           <div className="mt-6 space-y-3">
-            {addresses.map((address) => (
+            {addressList.map((address) => (
               <label
                 key={address.id}
                 className={`flex cursor-pointer gap-3 border bg-white p-4 ${
@@ -231,10 +270,10 @@ export function CheckoutClient({
                   ...form,
                   phone: form.phone || undefined,
                   addressLine2: form.addressLine2 || undefined,
-                  isDefault: addresses.length === 0,
+                  isDefault: addressList.length === 0,
                 });
+                setAddressList((current) => [...current, created]);
                 setAddressId(created.id);
-                router.refresh();
               } catch (error) {
                 setNotice(userFacingApiMessage(error));
               } finally {
@@ -277,7 +316,7 @@ export function CheckoutClient({
       <aside className="h-fit border border-black/10 bg-white p-6 lg:col-span-5">
         <h2 className="editorial-display text-2xl">Order summary</h2>
         <ul className="mt-6 space-y-4">
-          {cart.items.map((item) => (
+          {liveCart.items.map((item) => (
             <li key={item.variantId} className="flex justify-between gap-4 text-sm">
               <span>
                 {item.productName}

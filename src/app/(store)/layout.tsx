@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { BagCountSync } from "@/components/cart/bag-count-sync";
+import { BagToast } from "@/components/cart/bag-toast";
 import { StoreFooter } from "@/components/layout/store-footer";
 import { StoreHeader } from "@/components/layout/store-header";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
@@ -17,8 +18,9 @@ export default async function StoreLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-black text-off-white">
+    <div className="flex min-h-full min-w-0 flex-1 flex-col overflow-x-hidden bg-black text-off-white">
       <BagCountSync count={bagCount} />
+      <BagToast />
       <StoreHeader
         isAuthenticated={Boolean(user)}
         isStaff={hasStaffAccess(profile?.role)}

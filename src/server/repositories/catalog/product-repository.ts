@@ -290,6 +290,28 @@ export async function countProductsByStatus(db?: CatalogDb) {
     .groupBy(products.status);
 }
 
+export async function listVariantsForProducts(productIds: string[], db?: CatalogDb) {
+  if (productIds.length === 0) return [];
+  const client = catalogDb(db);
+  return client
+    .select({
+      productId: productVariants.productId,
+      id: productVariants.id,
+      sku: productVariants.sku,
+      size: productVariants.size,
+      color: productVariants.color,
+      colorCode: productVariants.colorCode,
+      price: productVariants.price,
+      compareAtPrice: productVariants.compareAtPrice,
+      isActive: productVariants.isActive,
+      available: sql<boolean>`coalesce((${inventory.quantityOnHand} - ${inventory.quantityReserved}) > 0, false)`,
+    })
+    .from(productVariants)
+    .leftJoin(inventory, eq(inventory.variantId, productVariants.id))
+    .where(inArray(productVariants.productId, productIds))
+    .orderBy(asc(productVariants.size), asc(productVariants.sku));
+}
+
 export async function listVariantsWithAvailability(productId: string, db?: CatalogDb) {
   const client = catalogDb(db);
   return client

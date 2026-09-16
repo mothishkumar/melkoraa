@@ -77,13 +77,15 @@ export function BagLink({ isAuthenticated }: { isAuthenticated: boolean }) {
           >
             View bag
           </Link>
-          <Link
-            href="/checkout"
-            onClick={() => setOpen(false)}
-            className="mk-solid hover:opacity-90"
-          >
-            Proceed to checkout
-          </Link>
+          {cart && cart.items.length > 0 ? (
+            <Link
+              href="/checkout"
+              onClick={() => setOpen(false)}
+              className="mk-solid hover:opacity-90"
+            >
+              Proceed to checkout
+            </Link>
+          ) : null}
         </div>
       </SheetContent>
     </Sheet>

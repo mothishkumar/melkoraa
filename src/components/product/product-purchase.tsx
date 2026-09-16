@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { SizeGuide } from "@/components/product/size-guide";
 import { addCartItemRequest } from "@/lib/api/cart";
 import { ApiClientError, userFacingApiMessage } from "@/lib/api/client";
 import { formatInr } from "@/lib/catalog/money";
-import { useUiStore } from "@/hooks/use-ui-store";
+import { showAddedToBagToast, useUiStore } from "@/hooks/use-ui-store";
 import type { ProductDetail } from "@/types/catalog";
 import { WishlistButton } from "@/components/product/wishlist-button";
 
@@ -63,7 +64,11 @@ export function ProductPurchase({
 
       {sizes.length > 0 ? (
         <fieldset>
-          <legend className="label-caps mb-3">Size</legend>
+          <legend className="sr-only">Size</legend>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span className="label-caps">Size</span>
+            <SizeGuide sizes={sizes} productName={product.name} />
+          </div>
           <div className="flex flex-wrap gap-2">
             {sizes.map((value) => (
               <button
@@ -137,6 +142,7 @@ export function ProductPurchase({
           disabled={!canAdd || pending}
           className="h-12 flex-1 rounded-none tracking-[0.22em] uppercase"
           onClick={async () => {
+            if (pending) return;
             if (!isAuthenticated) {
               router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);
               return;
@@ -150,7 +156,8 @@ export function ProductPurchase({
             try {
               const cart = await addCartItemRequest(selected.id, quantity);
               useUiStore.setState({ bagCount: cart.itemCount });
-              setNotice("Added to bag.");
+              showAddedToBagToast();
+              setNotice(null);
             } catch (error) {
               if (error instanceof ApiClientError && error.status === 401) {
                 router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);

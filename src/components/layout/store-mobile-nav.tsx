@@ -10,8 +10,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { BrandMark } from "@/components/layout/brand-mark";
 import { LogoutButton } from "@/features/auth";
-import { brand } from "@/lib/brand";
 import { storeNav } from "@/lib/navigation";
 
 export function StoreMobileNav({
@@ -34,8 +34,8 @@ export function StoreMobileNav({
         className="w-[min(100%,320px)] rounded-none border-white/10 bg-black p-0 text-off-white shadow-none"
       >
         <SheetHeader className="border-b border-white/10 px-6 py-5">
-          <SheetTitle className="editorial-display text-left text-sm tracking-[0.3em] text-off-white">
-            {brand.name}
+          <SheetTitle className="text-left">
+            <BrandMark href="/" className="text-sm text-off-white" />
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-1 px-6 py-8" aria-label="Mobile">

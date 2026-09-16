@@ -5,6 +5,7 @@ import { ProductGrid } from "@/components/product/product-grid";
 import { getSiteUrl } from "@/lib/auth/site-url";
 import { brand } from "@/lib/brand";
 import { loadPublicCatalog } from "@/lib/storefront/catalog";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { notFoundIfMissing } from "@/lib/storefront/not-found";
 import { getPublicDropBySlug } from "@/server/services/catalog/drop-service";
 
@@ -26,7 +27,10 @@ export default async function Drop001Page() {
     notFoundIfMissing(error);
   }
   if (!drop) notFound();
-  const catalog = await loadPublicCatalog({}, { drop: "drop-001", pageSize: "20" });
+  const [catalog, user] = await Promise.all([
+    loadPublicCatalog({}, { drop: "drop-001", pageSize: "20" }),
+    getCurrentUser(),
+  ]);
 
   return (
     <StoreSurface>
@@ -40,7 +44,7 @@ export default async function Drop001Page() {
           {drop.description ?? "Four stories. One higher tomorrow."}
         </p>
         <div className="mt-16">
-          <ProductGrid products={catalog.products} />
+          <ProductGrid products={catalog.products} isAuthenticated={Boolean(user)} />
         </div>
       </div>
     </StoreSurface>

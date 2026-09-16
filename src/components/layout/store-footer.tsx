@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { BrandMark } from "@/components/layout/brand-mark";
 import { brand } from "@/lib/brand";
 import { storeFooterNav } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,7 @@ export function StoreFooter() {
     >
       <div className="mx-auto grid max-w-[1600px] gap-12 px-4 py-16 md:grid-cols-12 md:px-8 md:py-20">
         <div className="md:col-span-5">
-          <p className="editorial-display text-xl tracking-[0.4em]">{brand.name}</p>
+          <BrandMark invert={light} className="text-xl" />
           <p className={cn("mt-5 max-w-sm text-sm leading-7", light ? "text-[#6f6b66]" : "text-stone")}>
             {brand.tagline}
           </p>

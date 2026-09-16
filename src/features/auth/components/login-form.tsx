@@ -30,6 +30,7 @@ export function LoginForm() {
         : null,
   );
   const [tone, setTone] = useState<"muted" | "ok" | "error">(resetOk ? "ok" : "error");
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -42,6 +43,7 @@ export function LoginForm() {
         className="mt-10 space-y-6"
         onSubmit={form.handleSubmit(async (values) => {
           setNotice(null);
+          setUnverifiedEmail(null);
           const result = await loginAction({
             email: values.email,
             password: values.password,
@@ -50,6 +52,9 @@ export function LoginForm() {
           if (!result.ok) {
             setTone("error");
             setNotice(result.message);
+            if (result.needsVerification) {
+              setUnverifiedEmail(values.email);
+            }
             if (result.fieldErrors) {
               for (const [key, message] of Object.entries(result.fieldErrors)) {
                 form.setError(key as keyof LoginValues, { message });
@@ -96,6 +101,14 @@ export function LoginForm() {
         </Button>
       </form>
       <FormNotice message={notice} tone={tone} />
+      {unverifiedEmail ? (
+        <Link
+          href={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+          className="mt-6 inline-block text-sm text-stone hover:text-off-white"
+        >
+          Resend verification email
+        </Link>
+      ) : null}
       <div className="mt-8 flex flex-col gap-3 text-sm text-stone">
         <Link href="/register" className="hover:text-off-white">
           Create an account

@@ -127,11 +127,25 @@ describe("addresses", () => {
   });
 });
 
-describe("unavailable variants", () => {
-  it("does not add when available is false", () => {
-    const variant = { id: "v1", available: false };
-    const canAdd = Boolean(variant.available);
-    expect(canAdd).toBe(false);
+describe("collection add to bag", () => {
+  it("adds from the card without linking Add to bag to the PDP", () => {
+    const src = readFileSync(
+      path.join(process.cwd(), "src/components/product/product-card.tsx"),
+      "utf8",
+    );
+    expect(src).toContain("AddToBagButton");
+    expect(src).not.toMatch(/href=\{`\/products\/\$\{product\.slug\}`\}[\s\S]*Add to bag/);
+  });
+});
+
+describe("checkout empty bag sync", () => {
+  it("revalidates the bag against GET /api/v1/cart before paying", () => {
+    const src = readFileSync(
+      path.join(process.cwd(), "src/features/checkout/checkout-client.tsx"),
+      "utf8",
+    );
+    expect(src).toContain("getCartRequest");
+    expect(src).toContain("authoritative.items.length === 0");
   });
 });
 
@@ -142,6 +156,7 @@ describe("browser bundle safety", () => {
       "src/lib/api/client.ts",
       "src/lib/api/checkout.ts",
       "src/components/product/product-purchase.tsx",
+      "src/components/product/add-to-bag-button.tsx",
       "src/components/layout/bag-link.tsx",
     ];
     for (const file of files) {

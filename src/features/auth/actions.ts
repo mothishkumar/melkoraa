@@ -27,7 +27,13 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 export type AuthActionResult =
   | { ok: true; redirectTo?: string; needsVerification?: boolean }
-  | { ok: false; message: string; fieldErrors?: Record<string, string> };
+  | {
+      ok: false;
+      message: string;
+      fieldErrors?: Record<string, string>;
+      needsVerification?: boolean;
+      alreadyVerified?: boolean;
+    };
 
 const RESEND_COOKIE = "melkoraa_verify_resend";
 const RESEND_COOLDOWN_SECONDS = 60;
@@ -148,7 +154,12 @@ export async function loginAction(input: {
   });
 
   if (error) {
-    return { ok: false, message: mapAuthError(error, AUTH_MESSAGES.invalidLogin) };
+    const message = mapAuthError(error, AUTH_MESSAGES.invalidLogin);
+    return {
+      ok: false,
+      message,
+      needsVerification: message === AUTH_MESSAGES.unverifiedEmail,
+    };
   }
 
   revalidatePath("/", "layout");
@@ -263,6 +274,18 @@ export async function resendVerificationAction(input: {
   }
 
   const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const sessionEmail = user?.email?.trim().toLowerCase();
+  if (user?.email_confirmed_at && sessionEmail === parsed.data.email.trim().toLowerCase()) {
+    return {
+      ok: false,
+      alreadyVerified: true,
+      message: AUTH_MESSAGES.alreadyVerified,
+    };
+  }
+
   const siteUrl = getSiteUrl();
   const { error } = await supabase.auth.resend({
     type: "signup",
@@ -282,6 +305,16 @@ export async function resendVerificationAction(input: {
 
   if (error && error.status === 429) {
     return { ok: false, message: AUTH_MESSAGES.rateLimited };
+  }
+
+  if (error) {
+    const message = mapAuthError(error, AUTH_MESSAGES.verifySent);
+    if (message === AUTH_MESSAGES.alreadyVerified) {
+      return { ok: false, alreadyVerified: true, message };
+    }
+    if (message !== AUTH_MESSAGES.verifySent) {
+      return { ok: false, message };
+    }
   }
 
   return { ok: true };

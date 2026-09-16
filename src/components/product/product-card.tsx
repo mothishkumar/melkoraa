@@ -1,22 +1,25 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { AddToBagButton } from "@/components/product/add-to-bag-button";
+import { WishlistButton } from "@/components/product/wishlist-button";
 import { formatInr } from "@/lib/catalog/money";
 import type { ProductListItem } from "@/types/catalog";
-import { WishlistButton } from "@/components/product/wishlist-button";
 
 export function ProductCard({
   product,
   wishlisted = false,
   showWishlist = false,
+  isAuthenticated = false,
 }: {
   product: ProductListItem;
   wishlisted?: boolean;
   showWishlist?: boolean;
+  isAuthenticated?: boolean;
 }) {
   const category = product.categories[0]?.name;
   return (
-    <article className="group">
+    <article className="group min-w-0">
       <div className="relative">
         <Link href={`/products/${product.slug}`} className="block">
           <div className="relative aspect-[4/5] overflow-hidden bg-[#ece8e1]">
@@ -48,16 +51,17 @@ export function ProductCard({
       </div>
       <div className="mt-4 text-center">
         <Link href={`/products/${product.slug}`} className="block">
-          <h2 className="text-[0.8rem] tracking-[0.16em] uppercase">{product.name}</h2>
+          <h2 className="text-[0.8rem] tracking-[0.16em] break-words uppercase">{product.name}</h2>
           {category ? <p className="mt-1 text-[0.65rem] tracking-[0.2em] uppercase text-stone">{category}</p> : null}
           <p className="mt-2 text-sm">{formatInr(product.basePrice)}</p>
         </Link>
-        <Link
-          href={`/products/${product.slug}`}
-          className="mk-solid mt-4 w-full hover:opacity-85"
-        >
-          {product.available ? "Add to bag" : "Sold out"}
-        </Link>
+        <AddToBagButton
+          productName={product.name}
+          productSlug={product.slug}
+          variants={product.variants}
+          available={product.available}
+          isAuthenticated={isAuthenticated}
+        />
       </div>
     </article>
   );

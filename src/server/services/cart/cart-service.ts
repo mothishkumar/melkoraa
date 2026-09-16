@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getDb } from "@/db";
 import { toMoneyString } from "@/lib/catalog/money";
 import { logger } from "@/lib/logger";
@@ -22,9 +24,9 @@ async function loadCartDto(userId: string): Promise<CartDto> {
   return mapCart(cart.id, lines.map(mapCartItem));
 }
 
-export async function getCart(userId: string): Promise<CartDto> {
+export const getCart = cache(async (userId: string): Promise<CartDto> => {
   return loadCartDto(userId);
-}
+});
 
 export async function addCartItem(
   userId: string,

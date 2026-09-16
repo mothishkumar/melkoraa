@@ -8,11 +8,13 @@ export function ProductGrid({
   products,
   wishlistedIds,
   showWishlist,
+  isAuthenticated = false,
   emptyLabel = "NO PIECES FOUND.",
 }: {
   products: ProductListItem[];
   wishlistedIds?: Set<string>;
   showWishlist?: boolean;
+  isAuthenticated?: boolean;
   emptyLabel?: string;
 }) {
   if (products.length === 0) {
@@ -34,6 +36,7 @@ export function ProductGrid({
           product={product}
           showWishlist={showWishlist}
           wishlisted={wishlistedIds?.has(product.id)}
+          isAuthenticated={isAuthenticated}
         />
       ))}
     </div>

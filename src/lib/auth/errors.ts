@@ -8,6 +8,7 @@ export const AUTH_MESSAGES = {
   unexpected: "Something went wrong. Please try again.",
   rateLimited: "Too many attempts. Please wait and try again.",
   unverifiedEmail: "Confirm your email before signing in.",
+  alreadyVerified: "This email is already confirmed. You can sign in.",
   recoveryMissing: "This reset link is invalid or has expired.",
   passwordUpdated: "Your password has been updated. Sign in to continue.",
   supabaseMissing: "Authentication is not configured.",
@@ -37,6 +38,16 @@ export function mapAuthError(
     includesAny(message, ["email not confirmed", "email_not_confirmed"])
   ) {
     return AUTH_MESSAGES.unverifiedEmail;
+  }
+
+  if (
+    includesAny(message, [
+      "already confirmed",
+      "email already confirmed",
+      "already been confirmed",
+    ])
+  ) {
+    return AUTH_MESSAGES.alreadyVerified;
   }
 
   if (

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { cache } from "react";
+
 import { createServiceRoleClient } from "@/lib/supabase/admin";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isPublicSupabaseConfigured } from "@/lib/env/public";
@@ -143,7 +145,7 @@ async function syncProfileNames(profile: Profile, user: {
   return toProfile(data as ProfileRow) ?? profile;
 }
 
-export async function getCurrentProfile(): Promise<Profile | null> {
+export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   if (!isPublicSupabaseConfigured()) {
     return null;
   }
@@ -163,4 +165,4 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   }
 
   return syncProfileNames(profile, user);
-}
+});

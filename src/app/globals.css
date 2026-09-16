@@ -141,10 +141,14 @@
 
   html {
     @apply font-sans bg-background text-foreground;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   body {
     @apply min-h-full bg-background text-foreground antialiased;
+    overflow-x: hidden;
+    max-width: 100%;
   }
 
   ::selection {
