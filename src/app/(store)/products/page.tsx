@@ -1,6 +1,7 @@
 import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductFilters } from "@/components/product/product-filters";
 import { Pagination, ProductGrid } from "@/components/product/product-grid";
+import { getSiteUrl } from "@/lib/auth/site-url";
 import { brand } from "@/lib/brand";
 import { loadPublicCatalog } from "@/lib/storefront/catalog";
 import { listPublicCategories } from "@/server/services/catalog/category-service";
@@ -13,6 +14,7 @@ export const metadata = {
   openGraph: {
     title: `Shop — ${brand.name}`,
     description: brand.drop.message,
+    url: getSiteUrl(),
   },
 };
 

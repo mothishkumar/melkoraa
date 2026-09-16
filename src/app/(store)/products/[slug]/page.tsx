@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchase } from "@/components/product/product-purchase";
+import { getSiteUrl } from "@/lib/auth/site-url";
 import { brand } from "@/lib/brand";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { notFoundIfMissing } from "@/lib/storefront/not-found";
@@ -24,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: `${product.name} — ${brand.name}`,
         description,
+        url: getSiteUrl(),
         images: product.images[0]?.url ? [{ url: product.images[0].url }] : undefined,
       },
     };

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { HomeHero } from "@/components/layout/home-hero";
 import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductGrid } from "@/components/product/product-grid";
+import { getSiteUrl } from "@/lib/auth/site-url";
 import { brand } from "@/lib/brand";
 import { loadPublicCatalog } from "@/lib/storefront/catalog";
 
@@ -13,6 +14,7 @@ export const metadata = {
   openGraph: {
     title: `${brand.name} — ${brand.tagline}`,
     description: brand.drop.message,
+    url: getSiteUrl(),
   },
 };
 

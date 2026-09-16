@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductGrid } from "@/components/product/product-grid";
+import { getSiteUrl } from "@/lib/auth/site-url";
 import { brand } from "@/lib/brand";
 import { loadPublicCatalog } from "@/lib/storefront/catalog";
 import { notFoundIfMissing } from "@/lib/storefront/not-found";
@@ -13,6 +14,7 @@ export const metadata = {
   openGraph: {
     title: `${brand.drop.label} — ${brand.name}`,
     description: brand.drop.message,
+    url: getSiteUrl(),
   },
 };
 
