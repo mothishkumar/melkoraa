@@ -13,7 +13,6 @@ const serverEnvSchema = z.object({
     .string()
     .min(1, "SUPABASE_SERVICE_ROLE_KEY is required on the server"),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required on the server"),
-  DIRECT_DATABASE_URL: z.string().optional(),
   RAZORPAY_KEY_ID: z.string().optional(),
   RAZORPAY_KEY_SECRET: z.string().optional(),
   RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
@@ -46,7 +45,6 @@ export function getServerEnv(): ServerEnv {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     DATABASE_URL: process.env.DATABASE_URL,
-    DIRECT_DATABASE_URL: process.env.DIRECT_DATABASE_URL,
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
     RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,

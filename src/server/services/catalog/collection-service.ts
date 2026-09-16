@@ -2,6 +2,7 @@ import { paginationMeta } from "@/server/http";
 import { conflictError, notFoundError } from "@/server/errors";
 import { isUniqueViolation, uniqueConstraintMessage } from "@/server/api";
 import { logger } from "@/lib/logger";
+import { recordOperationalAudit } from "@/server/audit";
 import { mapCollection } from "@/server/services/catalog/mappers";
 import * as collectionRepo from "@/server/repositories/catalog/collection-repository";
 import type { CollectionStatus } from "@/types";
@@ -55,6 +56,12 @@ export async function createCollection(
       seoDescription: input.seoDescription ?? null,
     });
     logger.info("catalog.collection_created", { actorId, resourceId: row?.id });
+    void recordOperationalAudit({
+      actorId,
+      action: "collection.created",
+      entityType: "collection",
+      entityId: row?.id ?? null,
+    });
     return row ? mapCollection(row) : row;
   } catch (error) {
     wrapUnique(error);
@@ -90,6 +97,12 @@ export async function updateCollection(
   try {
     const row = await collectionRepo.updateCollectionById(id, fields);
     logger.info("catalog.collection_updated", { actorId, resourceId: id });
+    void recordOperationalAudit({
+      actorId,
+      action: "collection.updated",
+      entityType: "collection",
+      entityId: id,
+    });
     return row ? mapCollection(row) : row;
   } catch (error) {
     wrapUnique(error);
@@ -103,5 +116,11 @@ export async function archiveCollection(id: string, actorId: string) {
   }
   const row = await collectionRepo.updateCollectionById(id, { status: "archived" });
   logger.info("catalog.collection_archived", { actorId, resourceId: id });
+  void recordOperationalAudit({
+    actorId,
+    action: "collection.archived",
+    entityType: "collection",
+    entityId: id,
+  });
   return row ? mapCollection(row) : row;
 }

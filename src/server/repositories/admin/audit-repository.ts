@@ -28,3 +28,27 @@ export async function listAuditLogs(
   ]);
   return { rows, total: Number(totals[0]?.value ?? 0) };
 }
+
+export async function insertAuditLog(
+  values: {
+    userId?: string | null;
+    action: string;
+    entityType: string;
+    entityId?: string | null;
+    metadata?: Record<string, unknown>;
+  },
+  db?: CatalogDb,
+) {
+  const client = catalogDb(db);
+  const [row] = await client
+    .insert(auditLogs)
+    .values({
+      userId: values.userId ?? null,
+      action: values.action,
+      entityType: values.entityType,
+      entityId: values.entityId ?? null,
+      metadata: values.metadata ?? {},
+    })
+    .returning({ id: auditLogs.id });
+  return row ?? null;
+}

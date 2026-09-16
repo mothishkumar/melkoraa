@@ -77,7 +77,9 @@ export function toErrorResponse(error: unknown): Response {
     );
   }
 
-  logger.error("api.unexpected_error");
+  logger.error("api.unexpected_error", {
+    name: error instanceof Error ? error.name : "unknown",
+  });
   return jsonError("INTERNAL", "Something went wrong. Please try again.", 500);
 }
 

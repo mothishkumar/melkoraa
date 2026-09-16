@@ -1,5 +1,6 @@
 import { getDb } from "@/db";
 import { logger } from "@/lib/logger";
+import { recordOperationalAudit } from "@/server/audit";
 import { isUniqueViolation } from "@/server/api";
 import {
   conflictError,
@@ -147,6 +148,14 @@ async function mutate(
   // Admin APIs keep the existing per-call transaction (no nested txs).
   const result = db ? await apply(db) : await getDb().transaction(apply);
   logger.info(operation, { actorId, resourceId: variantId });
+  if (operation === "inventory.adjusted") {
+    void recordOperationalAudit({
+      actorId,
+      action: "inventory.adjusted",
+      entityType: "inventory",
+      entityId: variantId,
+    });
+  }
   return mapSnapshot(result);
 }
 

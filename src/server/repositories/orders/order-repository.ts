@@ -81,6 +81,16 @@ export async function listOrderItems(orderId: string, db?: OrderDb) {
     .orderBy(orderItems.createdAt);
 }
 
+export async function listOrderItemsForOrders(orderIds: string[], db?: OrderDb) {
+  if (orderIds.length === 0) return [];
+  const client = orderDb(db);
+  return client
+    .select()
+    .from(orderItems)
+    .where(inArray(orderItems.orderId, orderIds))
+    .orderBy(orderItems.createdAt);
+}
+
 export async function insertStatusHistory(
   values: typeof orderStatusHistory.$inferInsert,
   db?: OrderDb,
