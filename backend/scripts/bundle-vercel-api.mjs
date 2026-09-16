@@ -40,10 +40,15 @@ bundle = bundle.replace(
 bundle = bundle.replace(/\brequire2\b/g, "require");
 writeFileSync(apiOut, banner + bundle);
 
+const apiShims = resolve(backendRoot, "api/shims");
+rmSync(apiShims, { recursive: true, force: true });
+cpSync(resolve(backendRoot, "src/shims"), apiShims, { recursive: true });
+
 const funcDir = resolve(backendRoot, ".vercel/output/functions/api/index.func");
 rmSync(resolve(backendRoot, ".vercel/output"), { recursive: true, force: true });
 mkdirSync(funcDir, { recursive: true });
 cpSync(apiOut, resolve(funcDir, "index.js"));
+cpSync(apiShims, resolve(funcDir, "shims"), { recursive: true });
 cpSync(sharedRoot, resolve(funcDir, ".vercel-shared-src"), { recursive: true });
 writeFileSync(
   resolve(funcDir, ".vc-config.json"),

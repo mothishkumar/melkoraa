@@ -28990,7 +28990,7 @@ var require_query = __commonJS({
     var originError = Symbol("OriginError");
     var CLOSE = module.exports.CLOSE = {};
     var Query = module.exports.Query = class Query extends Promise {
-      constructor(strings, args, handler, canceller, options = {}) {
+      constructor(strings, args, handler2, canceller, options = {}) {
         let resolve, reject;
         super((a, b) => {
           resolve = a;
@@ -28999,7 +28999,7 @@ var require_query = __commonJS({
         this.tagged = Array.isArray(strings.raw);
         this.strings = strings;
         this.args = args;
-        this.handler = handler;
+        this.handler = handler2;
         this.canceller = canceller;
         this.options = options;
         this.state = null;
@@ -30796,7 +30796,7 @@ var require_src = __commonJS({
       let ending = false;
       const queries = Queue(), connecting = Queue(), reserved = Queue(), closed = Queue(), ended = Queue(), open = Queue(), busy = Queue(), full = Queue(), queues = { connecting, reserved, closed, ended, open, busy, full };
       const connections = [...Array(options.max)].map(() => Connection(options, queues, { onopen, onend, onclose }));
-      const sql12 = Sql(handler);
+      const sql12 = Sql(handler2);
       Object.assign(sql12, {
         get parameters() {
           return options.parameters;
@@ -30814,8 +30814,8 @@ var require_src = __commonJS({
         end
       });
       return sql12;
-      function Sql(handler2) {
-        handler2.debug = options.debug;
+      function Sql(handler3) {
+        handler3.debug = options.debug;
         Object.entries(options.types).reduce((acc, [name2, type]) => {
           acc[name2] = (x) => new Parameter(x, type.to);
           return acc;
@@ -30834,12 +30834,12 @@ var require_src = __commonJS({
           return new Parameter(value, type);
         }
         function sql13(strings, ...args) {
-          const query = strings && Array.isArray(strings.raw) ? new Query(strings, args, handler2, cancel) : typeof strings === "string" && !args.length ? new Identifier(options.transform.column.to ? options.transform.column.to(strings) : strings) : new Builder(strings, args);
+          const query = strings && Array.isArray(strings.raw) ? new Query(strings, args, handler3, cancel) : typeof strings === "string" && !args.length ? new Identifier(options.transform.column.to ? options.transform.column.to(strings) : strings) : new Builder(strings, args);
           return query;
         }
         function unsafe(string, args = [], options2 = {}) {
           arguments.length === 2 && !Array.isArray(args) && (options2 = args, args = []);
-          const query = new Query([string], args, handler2, cancel, {
+          const query = new Query([string], args, handler3, cancel, {
             prepare: false,
             ...options2,
             simple: "simple" in options2 ? options2.simple : args.length === 0
@@ -30853,7 +30853,7 @@ var require_src = __commonJS({
               if (err)
                 return query2.reject(err);
               query2.strings = [string];
-              handler2(query2);
+              handler3(query2);
             });
           }, cancel, {
             ...options2,
@@ -30915,13 +30915,13 @@ var require_src = __commonJS({
         move(c, reserved);
         c.reserved = () => queue.length ? c.execute(queue.shift()) : move(c, reserved);
         c.reserved.release = true;
-        const sql13 = Sql(handler2);
+        const sql13 = Sql(handler3);
         sql13.release = () => {
           c.reserved = null;
           onopen(c);
         };
         return sql13;
-        function handler2(q) {
+        function handler3(q) {
           c.queue === full ? queue.push(q) : c.execute(q) || move(c, full);
         }
       }
@@ -30939,7 +30939,7 @@ var require_src = __commonJS({
           throw error;
         }
         async function scope(c, fn2, name2) {
-          const sql13 = Sql(handler2);
+          const sql13 = Sql(handler3);
           sql13.savepoint = savepoint;
           sql13.prepare = (x) => prepare = x.replace(/[^a-z0-9$-_. ]/gi);
           let uncaughtError, result;
@@ -30965,7 +30965,7 @@ var require_src = __commonJS({
             arguments.length === 1 && (fn3 = name3, name3 = null);
             return scope(c, fn3, "s" + savepoints++ + (name3 ? "_" + name3 : ""));
           }
-          function handler2(q) {
+          function handler3(q) {
             q.catch((e) => uncaughtError || (uncaughtError = e));
             c.queue === full ? queries2.push(q) : c.execute(q) || move(c, full);
           }
@@ -30991,7 +30991,7 @@ var require_src = __commonJS({
           return array(Array.from(arguments));
         return new Parameter(x, type || (x.length ? inferType(x) || 25 : 0), options.shared.typeArrayMap);
       }
-      function handler(query) {
+      function handler2(query) {
         if (ending)
           return query.reject(Errors.connection("CONNECTION_ENDED", options, options));
         if (open.length)
@@ -49969,21 +49969,21 @@ webhooksRouter.post(
 
 // src/app.ts
 function createApp() {
-  const app = express2();
+  const app2 = express2();
   const corsOrigins = [
     process.env.CORS_ORIGIN ?? "http://localhost:5173",
     process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174"
   ];
-  app.use(
+  app2.use(
     cors({
       origin: corsOrigins,
       credentials: true
     })
   );
-  app.use("/api/v1/webhooks", webhooksRouter);
-  app.use(express2.json());
-  app.use(cookieParser());
-  app.use(authMiddleware);
+  app2.use("/api/v1/webhooks", webhooksRouter);
+  app2.use(express2.json());
+  app2.use(cookieParser());
+  app2.use(authMiddleware);
   const api = express2.Router();
   api.use("/health", healthRouter);
   api.use("/auth", authRouter);
@@ -49997,15 +49997,18 @@ function createApp() {
   api.use("/payments", requireServerEnv, paymentsRouter);
   api.use("/orders", requireServerEnv, ordersRouter);
   api.use("/admin", adminRouter);
-  app.use("/api/v1", api);
-  app.get("/", (_req, res) => {
+  app2.use("/api/v1", api);
+  app2.get("/", (_req, res) => {
     res.json({ service: "melkoraa-api", version: "v1" });
   });
-  return app;
+  return app2;
 }
 
 // src/vercel-handler.ts
-var vercel_handler_default = createApp();
+var app = createApp();
+function handler(req, res) {
+  app(req, res);
+}
 export {
-  vercel_handler_default as default
+  handler as default
 };

@@ -2,5 +2,9 @@ import "./register.mjs";
 
 import { createApp } from "./app.js";
 
-// @vercel/node invokes the default export as an Express app directly.
-export default createApp();
+const app = createApp();
+
+// Explicit (req, res) handler — @vercel/node compatible without serverless-http.
+export default function handler(req: import("express").Request, res: import("express").Response) {
+  app(req, res);
+}

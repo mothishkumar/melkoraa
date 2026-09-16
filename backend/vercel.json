@@ -10,7 +10,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": ".vercel-shared-src/**"
+      "includeFiles": "{api/shims/**,.vercel-shared-src/**}"
     }
   }
 }
