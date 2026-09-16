@@ -1,13 +1,34 @@
 import { env } from "@/src/config/env";
-import { ApiClientError, type ApiErrorBody } from "@/src/api/errors";
+import {
+  ApiClientError,
+  AuthSessionExpiredError,
+  NetworkError,
+  TimeoutError,
+  type ApiErrorBody,
+} from "@/src/api/errors";
 import type { PaginatedResponse } from "@/src/api/types/common";
 
+const REQUEST_TIMEOUT_MS = 30000;
+
 type TokenProvider = () => Promise<string | null>;
+type RefreshSessionFn = () => Promise<string | null>;
+type ClearSessionFn = () => Promise<void>;
 
 let accessTokenProvider: TokenProvider | null = null;
+let refreshSessionFn: RefreshSessionFn | null = null;
+let clearSessionFn: ClearSessionFn | null = null;
+let refreshInFlight: Promise<string | null> | null = null;
 
 export function setAccessTokenProvider(provider: TokenProvider | null): void {
   accessTokenProvider = provider;
+}
+
+export function setSessionHandlers(
+  refresh: RefreshSessionFn | null,
+  clear: ClearSessionFn | null,
+): void {
+  refreshSessionFn = refresh;
+  clearSessionFn = clear;
 }
 
 function buildUrl(path: string): string {
@@ -59,6 +80,27 @@ async function buildHeaders(
   return headers;
 }
 
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new TimeoutError();
+    }
+    if (error instanceof TypeError) {
+      throw new NetworkError();
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function handleResponse<T>(response: Response): Promise<T> {
   const payload = await parseJson(response);
   if (!response.ok) {
@@ -78,16 +120,52 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return payload as T;
 }
 
+async function refreshAccessTokenOnce(): Promise<string | null> {
+  if (!refreshSessionFn) return null;
+  if (!refreshInFlight) {
+    refreshInFlight = refreshSessionFn().finally(() => {
+      refreshInFlight = null;
+    });
+  }
+  return refreshInFlight;
+}
+
+async function executeRequest<T>(
+  path: string,
+  init?: RequestInit & { authenticated?: boolean },
+  allowRetry = true,
+): Promise<T> {
+  const { authenticated = false, ...requestInit } = init ?? {};
+
+  try {
+    const response = await fetchWithTimeout(buildUrl(path), {
+      ...requestInit,
+      headers: await buildHeaders(requestInit, authenticated),
+    });
+    return await handleResponse<T>(response);
+  } catch (error) {
+    if (
+      allowRetry &&
+      authenticated &&
+      error instanceof ApiClientError &&
+      error.status === 401
+    ) {
+      const refreshed = await refreshAccessTokenOnce();
+      if (refreshed) {
+        return executeRequest<T>(path, init, false);
+      }
+      await clearSessionFn?.();
+      throw new AuthSessionExpiredError();
+    }
+    throw error;
+  }
+}
+
 export async function apiRequest<T>(
   path: string,
   init?: RequestInit & { authenticated?: boolean },
 ): Promise<T> {
-  const { authenticated = false, ...requestInit } = init ?? {};
-  const response = await fetch(buildUrl(path), {
-    ...requestInit,
-    headers: await buildHeaders(requestInit, authenticated),
-  });
-  return handleResponse<T>(response);
+  return executeRequest<T>(path, init, true);
 }
 
 export async function apiPage<T>(
@@ -95,29 +173,52 @@ export async function apiPage<T>(
   query?: Record<string, string | number | boolean | undefined>,
   authenticated = false,
 ): Promise<PaginatedResponse<T>> {
-  const response = await fetch(buildUrl(`${path}${buildQuery(query)}`), {
-    headers: await buildHeaders(undefined, authenticated),
-  });
-  const payload = (await parseJson(response)) as PaginatedResponse<T> & {
-    error?: ApiErrorBody["error"];
-  } | null;
+  const url = buildUrl(`${path}${buildQuery(query)}`);
 
-  if (!response.ok) {
-    throw new ApiClientError(
-      response.status,
-      payload?.error?.code ?? "INTERNAL",
-      payload?.error?.message ?? "Something went wrong. Please try again.",
-      payload?.error?.details,
-    );
+  async function fetchPage(allowRetry: boolean): Promise<PaginatedResponse<T>> {
+    try {
+      const response = await fetchWithTimeout(url, {
+        headers: await buildHeaders(undefined, authenticated),
+      });
+      const payload = (await parseJson(response)) as PaginatedResponse<T> & {
+        error?: ApiErrorBody["error"];
+      } | null;
+
+      if (!response.ok) {
+        throw new ApiClientError(
+          response.status,
+          payload?.error?.code ?? "INTERNAL",
+          payload?.error?.message ?? "Something went wrong. Please try again.",
+          payload?.error?.details,
+        );
+      }
+
+      return {
+        data: payload?.data ?? [],
+        pagination: payload?.pagination ?? {
+          page: 1,
+          pageSize: 20,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    } catch (error) {
+      if (
+        allowRetry &&
+        authenticated &&
+        error instanceof ApiClientError &&
+        error.status === 401
+      ) {
+        const refreshed = await refreshAccessTokenOnce();
+        if (refreshed) {
+          return fetchPage(false);
+        }
+        await clearSessionFn?.();
+        throw new AuthSessionExpiredError();
+      }
+      throw error;
+    }
   }
 
-  return {
-    data: payload?.data ?? [],
-    pagination: payload?.pagination ?? {
-      page: 1,
-      pageSize: 20,
-      total: 0,
-      totalPages: 0,
-    },
-  };
+  return fetchPage(true);
 }

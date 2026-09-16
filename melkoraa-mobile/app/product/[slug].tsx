@@ -15,6 +15,8 @@ import { useProduct } from "@/src/hooks/use-product";
 import { useCart } from "@/src/hooks/use-cart";
 import { useWishlistContext } from "@/src/providers/wishlist-provider";
 import { useAuth } from "@/src/auth/auth-context";
+import { savePendingAction } from "@/src/auth/pending-actions";
+import { userFacingApiMessage } from "@/src/api/errors";
 import { spacing } from "@/src/theme";
 import { formatPrice, isOnSale } from "@/src/utils/format";
 import { findVariant, getSizesForColor, getUniqueColors } from "@/src/utils/product";
@@ -22,7 +24,7 @@ import { findVariant, getSizesForColor, getUniqueColors } from "@/src/utils/prod
 export default function ProductDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { product, loading, error, reload } = useProduct(slug);
-  const { addItem, mutating, authRequired } = useCart();
+  const { addItem, mutating } = useCart();
   const { toggle, isSaved } = useWishlistContext();
   const { session } = useAuth();
 
@@ -43,36 +45,50 @@ export default function ProductDetailScreen() {
   const selectedVariant = product
     ? findVariant(product.variants, activeColor, activeSize)
     : undefined;
+  const returnPath = `/product/${slug}`;
 
   async function handleAddToCart() {
-    if (!session) {
-      router.push("/(auth)/login");
-      return;
-    }
     if (!selectedVariant) {
       Alert.alert("Select a variant", "Choose color and size before adding to bag.");
       return;
     }
+    if (!session) {
+      await savePendingAction({
+        type: "add_to_cart",
+        variantId: selectedVariant.id,
+        quantity,
+        returnPath,
+      });
+      router.push({ pathname: "/(auth)/login", params: { returnTo: returnPath } });
+      return;
+    }
     const result = await addItem(selectedVariant.id, quantity);
     if (result?.status === "auth_required") {
-      Alert.alert(
-        "Sign in required",
-        "Cart API returned 401. Bearer token support is needed on the backend.",
-      );
-      router.push("/(auth)/login");
+      await savePendingAction({
+        type: "add_to_cart",
+        variantId: selectedVariant.id,
+        quantity,
+        returnPath,
+      });
+      router.push({ pathname: "/(auth)/login", params: { returnTo: returnPath } });
       return;
     }
     if (result?.status === "success") {
       Alert.alert("Added to bag", `${product?.name} was added to your cart.`);
     } else if (result?.status === "error") {
-      Alert.alert("Unable to add", result.message);
+      Alert.alert("Unable to add", userFacingApiMessage(new Error(result.message)));
     }
   }
 
   async function handleWishlist() {
     if (!product) return;
     if (!session) {
-      router.push("/(auth)/login");
+      await savePendingAction({
+        type: "wishlist_toggle",
+        productId: product.id,
+        returnPath,
+      });
+      router.push({ pathname: "/(auth)/login", params: { returnTo: returnPath } });
       return;
     }
     await toggle(product.id);
@@ -128,11 +144,7 @@ export default function ProductDetailScreen() {
             <QuantityStepper value={quantity} onChange={setQuantity} />
 
             <View style={styles.actions}>
-              <Button
-                label={authRequired ? "Sign in to add" : "Add to bag"}
-                onPress={handleAddToCart}
-                loading={mutating}
-              />
+              <Button label="Add to bag" onPress={handleAddToCart} loading={mutating} />
               <Button
                 label={isSaved(product.id) ? "Saved" : "Wishlist"}
                 variant="secondary"
@@ -147,29 +159,11 @@ export default function ProductDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  loading: {
-    padding: spacing.lg,
-  },
-  content: {
-    paddingBottom: spacing.xxxl,
-  },
-  body: {
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-  },
-  compare: {
-    textDecorationLine: "line-through",
-  },
-  description: {
-    marginTop: spacing.xs,
-  },
-  actions: {
-    gap: spacing.md,
-    marginTop: spacing.lg,
-  },
+  loading: { padding: spacing.lg },
+  content: { paddingBottom: spacing.xxxl },
+  body: { padding: spacing.lg, gap: spacing.md },
+  priceRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  compare: { textDecorationLine: "line-through" },
+  description: { marginTop: spacing.xs },
+  actions: { gap: spacing.md, marginTop: spacing.lg },
 });

@@ -23,9 +23,12 @@ export const addressesApi = {
   },
 
   remove(addressId: string) {
-    return apiRequest<void>(`/addresses/${encodeURIComponent(addressId)}`, {
-      method: "DELETE",
-      authenticated: true,
-    });
+    return apiRequest<{ deleted: boolean }>(
+      `/addresses/${encodeURIComponent(addressId)}`,
+      {
+        method: "DELETE",
+        authenticated: true,
+      },
+    );
   },
 };

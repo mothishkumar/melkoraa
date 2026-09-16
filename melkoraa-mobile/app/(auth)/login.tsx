@@ -1,17 +1,25 @@
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
 } from "react-native";
 
-import { Text, View } from "@/components/Themed";
+import { AppText } from "@/src/components/ui/AppText";
+import { SafeScreen } from "@/src/components/ui/SafeScreen";
+import { Button } from "@/src/components/ui/Button";
 import { useAuth } from "@/src/auth/auth-context";
+import { colors, radii, spacing, typography } from "@/src/theme";
+import { userFacingApiMessage } from "@/src/api/errors";
 
 export default function LoginScreen() {
   const { configured, signIn } = useAuth();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +29,12 @@ export default function LoginScreen() {
     setSubmitting(true);
     setError(null);
     try {
-      await signIn({ email: email.trim(), password });
-      router.replace("/(tabs)/account");
+      const pending = await signIn({ email: email.trim(), password });
+      const destination =
+        pending?.returnPath ?? (typeof returnTo === "string" ? returnTo : "/(tabs)/profile");
+      router.replace(destination as never);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed.");
+      setError(userFacingApiMessage(err, "Sign in failed."));
     } finally {
       setSubmitting(false);
     }
@@ -32,80 +42,78 @@ export default function LoginScreen() {
 
   if (!configured) {
     return (
-      <View style={styles.container}>
-        <Text>Supabase is not configured. Copy `.env.example` to `.env` first.</Text>
-      </View>
+      <SafeScreen>
+        <AppText>Copy `.env.example` to `.env` and set Supabase keys.</AppText>
+      </SafeScreen>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign in</Text>
-      <TextInput
-        autoCapitalize="none"
-        keyboardType="email-address"
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-      />
-      <TextInput
-        secureTextEntry
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Pressable style={styles.button} onPress={onSubmit} disabled={submitting}>
-        {submitting ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign in</Text>
-        )}
-      </Pressable>
-      <Link href="/(auth)/forgot-password">
-        <Text style={styles.link}>Forgot password?</Text>
-      </Link>
-      <Link href="/(auth)/register">
-        <Text style={styles.link}>Create account</Text>
-      </Link>
-    </View>
+    <SafeScreen>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollView contentContainerStyle={styles.container}>
+          <AppText variant="brand" style={styles.brand}>MELKORAA</AppText>
+          <AppText variant="h1">Welcome back</AppText>
+          <AppText muted>Sign in to shop, save pieces, and checkout.</AppText>
+
+          <TextInput
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholder="Email"
+            placeholderTextColor={colors.textMuted}
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+          />
+          <TextInput
+            secureTextEntry
+            placeholder="Password"
+            placeholderTextColor={colors.textMuted}
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+          {error ? <AppText color={colors.error}>{error}</AppText> : null}
+          <Button label="Sign in" onPress={onSubmit} loading={submitting} />
+          <Link href="/(auth)/forgot-password" asChild>
+            <Pressable><AppText style={styles.link}>Forgot password?</AppText></Pressable>
+          </Link>
+          <Link href="/(auth)/register" asChild>
+            <Pressable><AppText style={styles.link}>Create account</AppText></Pressable>
+          </Link>
+          {submitting ? <ActivityIndicator color={colors.text} /> : null}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: {
-    flex: 1,
-    padding: 16,
-    gap: 12,
+    flexGrow: 1,
+    justifyContent: "center",
+    gap: spacing.md,
+    paddingVertical: spacing.xxxl,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "700",
+  brand: {
+    marginBottom: spacing.sm,
   },
   input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: "#999",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  button: {
-    backgroundColor: "#111",
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
+    ...typography.body,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
+    color: colors.text,
   },
   link: {
-    color: "#0a7ea4",
-    fontWeight: "600",
-  },
-  error: {
-    color: "#c0392b",
+    color: colors.text,
+    textDecorationLine: "underline",
+    textAlign: "center",
   },
 });

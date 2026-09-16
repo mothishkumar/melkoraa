@@ -90,6 +90,11 @@ export const authService = {
     return data.session;
   },
 
+  async updatePassword(password: string) {
+    const { error } = await getSupabaseClient().auth.updateUser({ password });
+    if (error) throw new Error(mapAuthError(error.message));
+  },
+
   async fetchProfile() {
     return authApi.me();
   },

@@ -1,4 +1,8 @@
-import { ApiClientError, isAuthRequiredError } from "@/src/api/errors";
+import {
+  ApiClientError,
+  AuthSessionExpiredError,
+  isAuthRequiredError,
+} from "@/src/api/errors";
 
 describe("isAuthRequiredError", () => {
   it("returns true for 401 ApiClientError", () => {
@@ -9,5 +13,12 @@ describe("isAuthRequiredError", () => {
   it("returns false for other errors", () => {
     const error = new ApiClientError(500, "INTERNAL", "Server error");
     expect(isAuthRequiredError(error)).toBe(false);
+  });
+});
+
+describe("AuthSessionExpiredError", () => {
+  it("has a user-facing default message", () => {
+    const error = new AuthSessionExpiredError();
+    expect(error.message).toContain("session has expired");
   });
 });

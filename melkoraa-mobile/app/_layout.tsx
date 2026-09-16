@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/components/useColorScheme";
-import { AuthProvider } from "@/src/auth/auth-context";
+import { AuthProvider, useAuth } from "@/src/auth/auth-context";
 import { WishlistProvider } from "@/src/providers/wishlist-provider";
 
 export { ErrorBoundary } from "expo-router";
@@ -25,12 +25,6 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
   if (!loaded) {
     return null;
   }
@@ -38,10 +32,26 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <WishlistProvider>
-        <RootLayoutNav />
+        <RootLayoutWithSplash />
       </WishlistProvider>
     </AuthProvider>
   );
+}
+
+function RootLayoutWithSplash() {
+  const { restoring, configured } = useAuth();
+
+  useEffect(() => {
+    if (!configured || !restoring) {
+      SplashScreen.hideAsync();
+    }
+  }, [configured, restoring]);
+
+  if (configured && restoring) {
+    return null;
+  }
+
+  return <RootLayoutNav />;
 }
 
 function RootLayoutNav() {
@@ -56,6 +66,11 @@ function RootLayoutNav() {
         <Stack.Screen name="search" options={{ headerShown: false }} />
         <Stack.Screen name="category/[slug]" options={{ headerShown: false }} />
         <Stack.Screen name="wishlist" options={{ headerShown: false }} />
+        <Stack.Screen name="account/addresses" options={{ headerShown: false }} />
+        <Stack.Screen name="checkout/index" options={{ headerShown: false }} />
+        <Stack.Screen name="orders/index" options={{ headerShown: false }} />
+        <Stack.Screen name="orders/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="order/success" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

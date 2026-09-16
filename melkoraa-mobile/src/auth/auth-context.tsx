@@ -9,33 +9,41 @@ import {
   type ReactNode,
 } from "react";
 
-import { setAccessTokenProvider } from "@/src/api/client";
+import { setAccessTokenProvider, setSessionHandlers } from "@/src/api/client";
 import type { AuthMeDto } from "@/src/api/types/auth";
 import {
   authService,
   type SignInInput,
   type SignUpInput,
 } from "@/src/auth/auth-service";
+import {
+  consumePendingAction,
+  type PendingAction,
+} from "@/src/auth/pending-actions";
 import { getSupabaseClient } from "@/src/auth/supabase";
+import { cartService } from "@/src/services/cart.service";
+import { wishlistService } from "@/src/services/wishlist.service";
 import { isSupabaseConfigured } from "@/src/config/env";
 
 type AuthContextValue = {
   configured: boolean;
-  loading: boolean;
+  restoring: boolean;
   session: Session | null;
   user: User | null;
   profile: AuthMeDto | null;
-  signIn: (input: SignInInput) => Promise<void>;
+  signIn: (input: SignInInput) => Promise<PendingAction | null>;
   signUp: (input: SignUpInput) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string) => Promise<void>;
   refreshProfile: () => Promise<void>;
+  processPendingAction: () => Promise<PendingAction | null>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [loading, setLoading] = useState(true);
+  const [restoring, setRestoring] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<AuthMeDto | null>(null);
@@ -54,13 +62,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [session]);
 
+  const clearSession = useCallback(async () => {
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    try {
+      await getSupabaseClient().auth.signOut();
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const refreshAccessToken = useCallback(async () => {
+    const nextSession = await authService.refreshSession();
+    if (!nextSession?.access_token) return null;
+    setSession(nextSession);
+    setUser(nextSession.user);
+    return nextSession.access_token;
+  }, []);
+
   useEffect(() => {
     setAccessTokenProvider(async () => session?.access_token ?? null);
-  }, [session]);
+    setSessionHandlers(refreshAccessToken, clearSession);
+  }, [session, refreshAccessToken, clearSession]);
 
   useEffect(() => {
     if (!configured) {
-      setLoading(false);
+      setRestoring(false);
       return;
     }
 
@@ -70,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(initialSession);
       setUser(initialSession?.user ?? null);
-      setLoading(false);
+      setRestoring(false);
     });
 
     const { data } = getSupabaseClient().auth.onAuthStateChange((_event, nextSession) => {
@@ -92,10 +120,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refreshProfile();
   }, [session, refreshProfile]);
 
+  const processPendingAction = useCallback(async () => {
+    const pending = await consumePendingAction();
+    if (!pending) return null;
+
+    if (pending.type === "add_to_cart") {
+      await cartService.addItem({
+        variantId: pending.variantId,
+        quantity: pending.quantity,
+      });
+    } else if (pending.type === "wishlist_toggle") {
+      await wishlistService.toggleItem(pending.productId);
+    }
+
+    return pending;
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       configured,
-      loading,
+      restoring,
       session,
       user,
       profile,
@@ -103,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const result = await authService.signIn(input);
         setSession(result.session);
         setUser(result.user);
+        return processPendingAction();
       },
       async signUp(input) {
         const result = await authService.signUp(input);
@@ -118,9 +163,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async resetPassword(email) {
         await authService.resetPassword(email);
       },
+      async updatePassword(password) {
+        await authService.updatePassword(password);
+      },
       refreshProfile,
+      processPendingAction,
     }),
-    [configured, loading, session, user, profile, refreshProfile],
+    [
+      configured,
+      restoring,
+      session,
+      user,
+      profile,
+      refreshProfile,
+      processPendingAction,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

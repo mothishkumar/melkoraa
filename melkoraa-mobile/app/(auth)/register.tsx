@@ -32,7 +32,7 @@ export default function RegisterScreen() {
         lastName: lastName.trim(),
       });
       setMessage("Account created. Check your email if confirmation is required.");
-      router.replace("/(tabs)/account");
+      router.replace("/(tabs)/profile");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");
     } finally {
