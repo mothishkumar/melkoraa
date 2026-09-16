@@ -44,6 +44,7 @@ export function App() {
             }
           />
           <Route path="shop" element={<Navigate to="/drop-001" replace />} />
+          <Route path="products" element={<Navigate to="/drop-001" replace />} />
         </Route>
 
         <Route element={<AuthLayout />}>

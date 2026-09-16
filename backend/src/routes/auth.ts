@@ -19,7 +19,7 @@ import { logger } from "@/lib/logger";
 import { asyncHandler, handleRoute } from "../lib/handle-route.js";
 import { sendError, sendJson } from "../lib/express-response.js";
 import { createExpressSupabaseClient } from "../lib/supabase.js";
-import { authMiddleware, loadAuthContext, requireAuth } from "../middleware/auth.js";
+import { loadAuthContext, requireAuth } from "../middleware/auth.js";
 
 const RESEND_COOKIE = "melkoraa_verify_resend";
 const RESEND_COOLDOWN_SECONDS = 60;

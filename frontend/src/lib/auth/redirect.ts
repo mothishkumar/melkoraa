@@ -6,6 +6,7 @@ function isSafeRelativePath(path: string): boolean {
   if (path.startsWith("/\\")) return false;
   if (path.includes("://")) return false;
   if (path.includes("\\")) return false;
+  // eslint-disable-next-line no-control-regex -- block control chars in redirect paths
   if (/[\u0000-\u001f\u007f]/.test(path)) return false;
   if (path.includes("\\u0000")) return false;
   return true;

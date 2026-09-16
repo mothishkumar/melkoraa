@@ -129,11 +129,3 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   }
   next();
 }
-
-declare global {
-  namespace Express {
-    interface Request {
-      auth: { user: SessionUser; profile: Profile } | null;
-    }
-  }
-}

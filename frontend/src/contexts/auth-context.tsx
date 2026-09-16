@@ -31,8 +31,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    let cancelled = false;
+    void (async () => {
+      try {
+        const me = await getMeRequest();
+        if (!cancelled) setUser(me);
+      } catch (error) {
+        if (!cancelled && error instanceof ApiClientError && error.status === 401) {
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const signOut = useCallback(async () => {
     try {
