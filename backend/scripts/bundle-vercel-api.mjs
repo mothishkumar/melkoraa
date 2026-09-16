@@ -40,9 +40,14 @@ bundle = bundle.replace(
 bundle = bundle.replace(/\brequire2\b/g, "require");
 writeFileSync(apiOut, banner + bundle);
 
+// Only ship the runtime CJS shim — .ts files under api/ become extra Vercel lambdas.
 const apiShims = resolve(backendRoot, "api/shims");
 rmSync(apiShims, { recursive: true, force: true });
-cpSync(resolve(backendRoot, "src/shims"), apiShims, { recursive: true });
+mkdirSync(apiShims, { recursive: true });
+cpSync(
+  resolve(backendRoot, "src/shims/server-only-empty.cjs"),
+  resolve(apiShims, "server-only-empty.cjs"),
+);
 
 const funcDir = resolve(backendRoot, ".vercel/output/functions/api/index.func");
 rmSync(resolve(backendRoot, ".vercel/output"), { recursive: true, force: true });
