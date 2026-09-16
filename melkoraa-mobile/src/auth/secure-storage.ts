@@ -1,51 +1,36 @@
-import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 
-const CHUNK_SIZE = 1800;
+import { createWebStorage } from "@/src/auth/web-storage";
+import type { StorageAdapter } from "@/src/auth/storage-core";
 
-function chunkKey(key: string, index: number) {
-  return `${key}_${index}`;
+let storage: StorageAdapter | null = null;
+
+export function resetSecureStorageCache(): void {
+  storage = null;
 }
 
-export const secureStorage = {
-  async getItem(key: string): Promise<string | null> {
-    const first = await SecureStore.getItemAsync(key);
-    if (first === null) return null;
-    if (!first.startsWith("chunked:")) return first;
+function getSecureStorage(): StorageAdapter {
+  if (storage) return storage;
 
-    const count = Number(first.replace("chunked:", ""));
-    if (!Number.isFinite(count) || count <= 0) return null;
+  if (Platform.OS === "web") {
+    storage = createWebStorage();
+    return storage;
+  }
 
-    const parts: string[] = [];
-    for (let i = 0; i < count; i += 1) {
-      const part = await SecureStore.getItemAsync(chunkKey(key, i));
-      if (part === null) return null;
-      parts.push(part);
-    }
-    return parts.join("");
+  const { createNativeSecureStorage } =
+    require("@/src/auth/native-secure-storage") as typeof import("@/src/auth/native-secure-storage");
+  storage = createNativeSecureStorage();
+  return storage;
+}
+
+export const secureStorage: StorageAdapter = {
+  getItem(key: string) {
+    return getSecureStorage().getItem(key);
   },
-
-  async setItem(key: string, value: string): Promise<void> {
-    if (value.length <= CHUNK_SIZE) {
-      await SecureStore.setItemAsync(key, value);
-      return;
-    }
-
-    const chunks = Math.ceil(value.length / CHUNK_SIZE);
-    await SecureStore.setItemAsync(key, `chunked:${chunks}`);
-    for (let i = 0; i < chunks; i += 1) {
-      const part = value.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-      await SecureStore.setItemAsync(chunkKey(key, i), part);
-    }
+  setItem(key: string, value: string) {
+    return getSecureStorage().setItem(key, value);
   },
-
-  async removeItem(key: string): Promise<void> {
-    const marker = await SecureStore.getItemAsync(key);
-    if (marker?.startsWith("chunked:")) {
-      const count = Number(marker.replace("chunked:", ""));
-      for (let i = 0; i < count; i += 1) {
-        await SecureStore.deleteItemAsync(chunkKey(key, i));
-      }
-    }
-    await SecureStore.deleteItemAsync(key);
+  removeItem(key: string) {
+    return getSecureStorage().removeItem(key);
   },
 };
