@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, inArray, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, type SQL } from "drizzle-orm";
 
 import { addresses, orderItems, orderStatusHistory, orders } from "@/db/schema";
 import { loadPagedRows } from "@/db/paginate";
