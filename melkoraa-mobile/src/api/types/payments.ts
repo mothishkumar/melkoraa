@@ -35,8 +35,7 @@ export type VerifyPaymentInput = {
 };
 
 export type PaymentFinalizeResult = {
-  orderId: string;
-  paymentStatus: string;
-  orderStatus: string;
+  order: CheckoutOrderDto;
+  payment: CheckoutPaymentDto;
   alreadyFinalized: boolean;
 };
