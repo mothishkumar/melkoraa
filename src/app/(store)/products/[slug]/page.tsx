@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 
 import { notFound } from "next/navigation";
 
+import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchase } from "@/components/product/product-purchase";
 import { brand } from "@/lib/brand";
-import { formatInr } from "@/lib/catalog/money";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { notFoundIfMissing } from "@/lib/storefront/not-found";
 import { getPublicProductBySlug } from "@/server/services/catalog/product-service";
@@ -49,16 +49,15 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto grid max-w-[1600px] gap-12 px-4 py-10 md:grid-cols-2 md:px-8 md:py-16">
-      <ProductGallery images={product.images} productName={product.name} />
-      <div>
+    <StoreSurface>
+      <div className="mx-auto grid max-w-[1600px] gap-12 px-4 py-10 md:grid-cols-2 md:px-8 md:py-16">
+        <ProductGallery images={product.images} productName={product.name} />
         <ProductPurchase
           product={product}
           wishlisted={wishlisted}
           isAuthenticated={Boolean(user)}
         />
-        <p className="mt-10 text-xs text-stone">From {formatInr(product.basePrice)}</p>
       </div>
-    </div>
+    </StoreSurface>
   );
 }

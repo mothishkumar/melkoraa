@@ -44,16 +44,19 @@ export function ProductPurchase({
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <p className="label-caps">{product.drop?.name ?? "MELKORAA"}</p>
-        <h1 className="editorial-display mt-4 text-4xl md:text-6xl">{product.name}</h1>
-        <p className="mt-6 text-lg">{formatInr(price)}</p>
+        <p className="label-caps text-[#8a8580]">{product.drop?.name ?? "MELKORAA"}</p>
+        <h1 className="editorial-display mt-3 text-4xl tracking-[0.12em] text-[#111] md:text-5xl">{product.name}</h1>
+        <p className="mt-5 text-lg text-[#111]">{formatInr(price)}</p>
+        {product.compareAtPrice ? (
+          <p className="mt-1 text-sm text-[#6f6b66] line-through">{formatInr(product.compareAtPrice)}</p>
+        ) : null}
         <p className="mt-3 label-caps">
           {selected ? (selected.available ? "Available" : "Unavailable") : "Select a variant"}
         </p>
       </div>
 
       {product.description || product.shortDescription ? (
-        <p className="max-w-md text-sm leading-7 text-stone">
+        <p className="max-w-md text-sm leading-7 text-[#6f6b66]">
           {product.description ?? product.shortDescription}
         </p>
       ) : null}
@@ -68,7 +71,7 @@ export function ProductPurchase({
                 type="button"
                 onClick={() => setSize(value)}
                 className={`min-h-11 min-w-11 border px-3 text-sm ${
-                  size === value ? "border-off-white bg-off-white text-black" : "border-white/20"
+                  size === value ? "border-black bg-black text-white" : "border-black/20"
                 }`}
               >
                 {value}
@@ -88,7 +91,7 @@ export function ProductPurchase({
                 type="button"
                 onClick={() => setColor(value)}
                 className={`min-h-11 border px-4 text-sm ${
-                  color === value ? "border-off-white bg-off-white text-black" : "border-white/20"
+                  color === value ? "border-black bg-black text-white" : "border-black/20"
                 }`}
               >
                 {value}
@@ -102,7 +105,7 @@ export function ProductPurchase({
         <label className="label-caps" htmlFor="qty">
           Quantity
         </label>
-        <div className="mt-3 flex items-center border border-white/20">
+        <div className="mt-3 flex items-center border border-black/20">
           <button
             type="button"
             className="size-11"
@@ -132,7 +135,7 @@ export function ProductPurchase({
         <Button
           type="button"
           disabled={!canAdd || pending}
-          className="h-12 flex-1 rounded-none tracking-[0.2em] uppercase"
+          className="h-12 flex-1 rounded-none tracking-[0.22em] uppercase"
           onClick={async () => {
             if (!isAuthenticated) {
               router.push(`/login?next=${encodeURIComponent(`/products/${product.slug}`)}`);
@@ -163,7 +166,26 @@ export function ProductPurchase({
         </Button>
         <WishlistButton productId={product.id} initial={wishlisted} />
       </div>
-      {notice ? <p className="text-sm text-stone">{notice}</p> : null}
+      {notice ? <p className="text-sm text-[#6f6b66]">{notice}</p> : null}
+
+      <ul className="grid gap-3 border-t border-black/10 pt-6 text-[0.68rem] uppercase tracking-[0.14em] text-[#6f6b66] sm:grid-cols-3">
+        <li>Free shipping on qualifying orders</li>
+        <li>Easy returns</li>
+        <li>Secure payments</li>
+      </ul>
+
+      <details className="border-t border-black/10 pt-4">
+        <summary className="label-caps cursor-pointer list-none">Product details</summary>
+        <p className="mt-3 text-sm leading-7 text-[#6f6b66]">
+          {product.shortDescription ?? product.description ?? product.brand}
+        </p>
+      </details>
+      {product.description && product.shortDescription ? (
+        <details className="border-t border-black/10 pt-4">
+          <summary className="label-caps cursor-pointer list-none">Material & care</summary>
+          <p className="mt-3 text-sm leading-7 text-[#6f6b66]">{product.description}</p>
+        </details>
+      ) : null}
     </div>
   );
 }

@@ -17,9 +17,9 @@ export function ProductGrid({
 }) {
   if (products.length === 0) {
     return (
-      <div className="border-t border-white/10 py-24 text-center">
+      <div className="border-t border-current/15 py-24 text-center">
         <p className="editorial-display text-3xl">{emptyLabel}</p>
-        <Link href="/products" className="mt-8 inline-block label-caps text-off-white">
+        <Link href="/products" className="mt-8 inline-block label-caps">
           Continue shopping
         </Link>
       </div>
@@ -27,7 +27,7 @@ export function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-3 lg:grid-cols-4 md:gap-x-6">
+    <div className="grid grid-cols-2 gap-x-4 gap-y-14 md:grid-cols-3 lg:grid-cols-4 md:gap-x-8">
       {products.map((product) => (
         <ProductCard
           key={product.id}
@@ -60,19 +60,19 @@ export function Pagination({
     return query ? `${basePath}?${query}` : basePath;
   };
   return (
-    <nav className="mt-16 flex items-center justify-between border-t border-white/10 pt-8" aria-label="Pagination">
+    <nav className="mt-16 flex items-center justify-between border-t border-current/15 pt-8" aria-label="Pagination">
       {pagination.page > 1 ? (
-        <Link href={makeHref(pagination.page - 1)} className="label-caps text-off-white">
+        <Link href={makeHref(pagination.page - 1)} className="label-caps">
           Previous
         </Link>
       ) : (
         <span />
       )}
-      <p className="text-xs tracking-[0.2em] uppercase text-stone">
+      <p className="text-xs tracking-[0.2em] uppercase text-[#6f6b66]">
         {pagination.page} / {pagination.totalPages}
       </p>
       {pagination.page < pagination.totalPages ? (
-        <Link href={makeHref(pagination.page + 1)} className="label-caps text-off-white">
+        <Link href={makeHref(pagination.page + 1)} className="label-caps">
           Next
         </Link>
       ) : (

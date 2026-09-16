@@ -1,3 +1,4 @@
+import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductFilters } from "@/components/product/product-filters";
 import { Pagination, ProductGrid } from "@/components/product/product-grid";
 import { brand } from "@/lib/brand";
@@ -39,14 +40,16 @@ export default async function ProductsPage({
   };
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-12 md:px-8 md:py-16">
-      <p className="label-caps">{brand.drop.label}</p>
-      <h1 className="editorial-display mt-4 text-4xl md:text-6xl">Shop</h1>
-      <ProductFilters categories={categories.data} current={current} basePath="/products" />
-      <div className="mt-10">
-        <ProductGrid products={products} wishlistedIds={wishlisted} showWishlist={Boolean(user)} />
+    <StoreSurface>
+      <div className="mx-auto max-w-[1600px] px-4 py-12 md:px-8 md:py-16">
+        <p className="label-caps text-center">{brand.drop.label}</p>
+        <h1 className="editorial-display mt-4 text-center text-4xl md:text-6xl">Shop</h1>
+        <ProductFilters categories={categories.data} current={current} basePath="/products" />
+        <div className="mt-10">
+          <ProductGrid products={products} wishlistedIds={wishlisted} showWishlist={Boolean(user)} />
+        </div>
+        <Pagination pagination={pagination} basePath="/products" searchParams={current} />
       </div>
-      <Pagination pagination={pagination} basePath="/products" searchParams={current} />
-    </div>
+    </StoreSurface>
   );
 }

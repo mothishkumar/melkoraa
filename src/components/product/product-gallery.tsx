@@ -39,7 +39,7 @@ export function ProductGallery({
             aria-current={imageIndex === index}
             className={cn(
               "relative aspect-[3/4] overflow-hidden border",
-              imageIndex === index ? "border-off-white" : "border-white/10",
+              imageIndex === index ? "border-black" : "border-black/10",
             )}
           >
             <Image
@@ -52,7 +52,7 @@ export function ProductGallery({
           </button>
         ))}
       </div>
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-charcoal">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#ece8e1]">
         {broken ? (
           <div className="flex h-full items-end px-6 py-8">
             <p className="text-sm text-stone">{productName}</p>
@@ -79,7 +79,7 @@ export function ProductGallery({
               aria-label={`View image ${imageIndex + 1}`}
               className={cn(
                 "relative h-20 w-16 shrink-0 overflow-hidden border",
-                imageIndex === index ? "border-off-white" : "border-white/10",
+                imageIndex === index ? "border-black" : "border-black/10",
               )}
             >
               <Image src={image.url} alt="" fill sizes="64px" className="object-cover" />

@@ -49,20 +49,20 @@ export default async function AdminProductsPage({
           ) : null
         }
       />
-      <form className="mb-4 flex flex-wrap gap-2" method="get">
+      <form className="admin-panel mb-4 flex flex-wrap gap-2 p-3" method="get">
         <input
           name="search"
           defaultValue={query.search ?? ""}
           placeholder="Search name or slug"
-          className="h-8 min-w-[12rem] flex-1 border border-input bg-transparent px-2 text-sm"
+          className="h-9 min-w-[12rem] flex-1 rounded-lg border border-zinc-200 bg-white px-3 text-sm"
         />
-        <select name="status" defaultValue={query.status ?? ""} className="h-8 border border-input bg-transparent px-2 text-sm">
+        <select name="status" defaultValue={query.status ?? ""} className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm">
           <option value="">All statuses</option>
           <option value="draft">Draft</option>
           <option value="active">Active</option>
           <option value="archived">Archived</option>
         </select>
-        <select name="sort" defaultValue={query.sort} className="h-8 border border-input bg-transparent px-2 text-sm">
+        <select name="sort" defaultValue={query.sort} className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm">
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="name_asc">Name A–Z</option>

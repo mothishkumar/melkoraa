@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { StatusPill } from "@/components/admin/status-pill";
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import { AdminNotice } from "@/components/admin/page-header";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -29,7 +29,7 @@ export function ProductTable({ products }: { products: AdminProductListItem[] })
   return (
     <div className="space-y-3">
       <AdminNotice message={notice} tone="error" />
-      <div className="overflow-x-auto">
+      <div className="admin-panel overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -52,10 +52,10 @@ export function ProductTable({ products }: { products: AdminProductListItem[] })
                       <img
                         src={product.primaryImage.url}
                         alt={product.primaryImage.alt || product.name}
-                        className="size-10 object-cover"
+                        className="size-10 rounded-lg object-cover"
                       />
                     ) : (
-                      <div className="size-10 bg-white/10" />
+                      <div className="size-10 rounded-lg bg-zinc-100" />
                     )}
                     <div>
                       <Link href={`/admin/products/${product.id}`} className="font-medium hover:underline">
@@ -69,7 +69,7 @@ export function ProductTable({ products }: { products: AdminProductListItem[] })
                 </TableCell>
                 <TableCell className="font-mono text-xs">{product.slug}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{product.status}</Badge>
+                  <StatusPill value={product.status} />
                 </TableCell>
                 <TableCell className="tabular-nums">{formatInr(product.basePrice)}</TableCell>
                 <TableCell>{product.variantCount}</TableCell>

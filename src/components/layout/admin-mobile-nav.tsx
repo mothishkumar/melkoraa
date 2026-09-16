@@ -26,14 +26,14 @@ export function AdminMobileNav({ role }: { role: UserRole }) {
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="w-[min(100%,280px)] rounded-none border-white/10 bg-zinc-950 p-0 text-foreground shadow-none"
+        className="w-[min(100%,280px)] rounded-none border-white/10 bg-[#0b0b0b] p-0 text-off-white shadow-none"
         >
           <SheetHeader className="border-b border-white/10 px-5 py-4">
             <SheetTitle className="text-left text-sm tracking-[0.16em] uppercase">Operations</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col px-3 py-4">
             {items.map((item) => (
-              <Link key={item.href} href={item.href} className="px-2 py-2 text-sm text-muted-foreground">
+              <Link key={item.href} href={item.href} className="px-2 py-2 text-sm text-white/70 hover:text-white">
                 {item.label}
               </Link>
             ))}

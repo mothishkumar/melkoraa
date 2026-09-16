@@ -1,62 +1,92 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 
 import { brand } from "@/lib/brand";
+import { formatInr } from "@/lib/catalog/money";
+import type { ProductListItem } from "@/types/catalog";
 
-export function HomeHero() {
+export function HomeHero({ products = [] }: { products?: ProductListItem[] }) {
+  const lineup = products.slice(0, 4);
+
   return (
-    <section className="relative overflow-hidden">
-      <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-[1600px] grid-cols-1 md:grid-cols-12">
-        <div className="flex flex-col justify-end border-b border-white/10 px-4 py-16 md:col-span-7 md:border-b-0 md:border-r md:px-8 md:py-24">
+    <section className="relative min-h-[calc(100vh-5rem)] overflow-hidden bg-black">
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 30%, rgba(120,110,90,0.28), transparent 55%), linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.72) 100%)",
+        }}
+      />
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-5rem)] max-w-[1600px] flex-col justify-between px-4 py-10 md:px-8 md:py-14">
+        <div className="flex items-start justify-between text-[0.62rem] tracking-[0.28em] uppercase text-stone">
+          <p className="hidden max-w-[10rem] leading-5 md:block">
+            Individuality
+            <br />
+            Transformation
+            <br />
+            Elevation
+          </p>
+          <p className="ml-auto hidden text-right md:block">
+            More than
+            <br />
+            clothing
+          </p>
+        </div>
+
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
           <motion.p
-            className="label-caps"
-            initial={{ opacity: 0, y: 12 }}
+            className="editorial-display text-sm tracking-[0.5em] text-off-white/80"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             {brand.name}
           </motion.p>
           <motion.h1
-            className="editorial-display mt-8 max-w-[12ch] text-[clamp(2.8rem,9vw,8rem)] leading-[0.9]"
-            initial={{ opacity: 0, y: 18 }}
+            className="editorial-display mt-6 max-w-[16ch] text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.92] text-off-white"
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.08, ease: "easeOut" }}
+            transition={{ delay: 0.08 }}
           >
-            BUILD YOUR
-            <br />
-            OWN IDENTITY.
+            {brand.drop.code}
+            <span className="mt-3 block text-[0.38em] tracking-[0.42em] text-off-white/80">
+              {brand.drop.name}
+            </span>
           </motion.h1>
-          <motion.p
-            className="mt-10 text-sm tracking-[0.2em] text-stone"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {brand.drop.label}
-          </motion.p>
-        </div>
-        <div className="flex flex-col justify-between px-4 py-16 md:col-span-5 md:px-10 md:py-24">
-          <p className="max-w-[16ch] font-heading text-3xl leading-tight md:text-5xl">
-            {brand.drop.message}
+          <p className="mt-6 text-[0.7rem] tracking-[0.32em] text-stone uppercase">
+            Four stories. One higher tomorrow.
           </p>
-          <div className="mt-16 space-y-8">
-            <p className="max-w-sm text-sm leading-7 text-stone">{brand.copy.path}</p>
-            <Link
-              href="/drop-001"
-              className="inline-flex w-fit border border-off-white px-8 py-4 text-[0.7rem] tracking-[0.28em] uppercase transition-colors hover:bg-off-white hover:text-black"
-            >
-              SHOP DROP 001
-            </Link>
-            <Link
-              href="/drop-001"
-              className="block text-[0.7rem] tracking-[0.22em] uppercase text-stone hover:text-off-white"
-            >
-              EXPLORE THE BUILDER
-            </Link>
-          </div>
+          <Link href="/drop-001" className="mk-outline mt-10 border-off-white text-off-white hover:bg-off-white hover:text-black">
+            Shop {brand.drop.code}
+          </Link>
         </div>
+
+        {lineup.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
+            {lineup.map((product, index) => (
+              <Link key={product.id} href={`/products/${product.slug}`} className="group">
+                <div className="relative aspect-[3/4] overflow-hidden bg-charcoal">
+                  {product.primaryImage?.url ? (
+                    <Image
+                      src={product.primaryImage.url}
+                      alt={product.primaryImage.alt || product.name}
+                      fill
+                      sizes="25vw"
+                      className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                      priority={index < 2}
+                    />
+                  ) : null}
+                </div>
+                <p className="mt-3 text-center text-[0.68rem] tracking-[0.18em] uppercase text-off-white/80">
+                  {product.name}
+                </p>
+                <p className="mt-1 text-center text-xs text-stone">{formatInr(product.basePrice)}</p>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );

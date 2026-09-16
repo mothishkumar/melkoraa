@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { StoreSurface } from "@/components/layout/store-surface";
 import { ProductGrid } from "@/components/product/product-grid";
 import { brand } from "@/lib/brand";
 import { loadPublicCatalog } from "@/lib/storefront/catalog";
@@ -26,20 +27,20 @@ export default async function Drop001Page() {
   const catalog = await loadPublicCatalog({}, { drop: "drop-001", pageSize: "20" });
 
   return (
-    <div className="mx-auto max-w-[1600px] px-4 py-12 md:px-8 md:py-20">
-      <p className="label-caps">{drop.name.toUpperCase() === "THE BUILDER" ? brand.drop.code : drop.name}</p>
-      <h1 className="editorial-display mt-4 text-5xl md:text-7xl">{brand.drop.name}</h1>
-      <p className="mt-6 font-heading text-2xl">{brand.drop.message}</p>
-      {drop.description ? (
-        <p className="mt-6 max-w-xl text-sm leading-7 text-stone">{drop.description}</p>
-      ) : (
-        <p className="mt-6 max-w-xl text-sm leading-7 text-stone">
-          The first MELKORAA drop. Architectural streetwear, limited in spirit, built from nothing.
+    <StoreSurface>
+      <div className="mx-auto max-w-[1600px] px-4 py-12 md:px-8 md:py-20">
+        <p className="label-caps text-center">Limited release</p>
+        <h1 className="editorial-display mt-4 text-center text-5xl md:text-7xl">{brand.drop.code}</h1>
+        <p className="mt-3 text-center font-heading text-xl tracking-[0.28em] uppercase text-[#111]/75">
+          {drop.name}
         </p>
-      )}
-      <div className="mt-16">
-        <ProductGrid products={catalog.products} />
+        <p className="mx-auto mt-6 max-w-xl text-center text-sm leading-7 text-[#6f6b66]">
+          {drop.description ?? "Four stories. One higher tomorrow."}
+        </p>
+        <div className="mt-16">
+          <ProductGrid products={catalog.products} />
+        </div>
       </div>
-    </div>
+    </StoreSurface>
   );
 }

@@ -48,11 +48,11 @@ export function BagLink({ isAuthenticated }: { isAuthenticated: boolean }) {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-[min(100%,380px)] rounded-none border-white/10 bg-black p-0 text-off-white"
+        className="w-[min(100%,380px)] rounded-none border-black/10 bg-[#f6f3ee] p-0 text-[#111]"
       >
-        <SheetHeader className="border-b border-white/10 px-6 py-5">
-          <SheetTitle className="editorial-display text-left text-sm tracking-[0.3em] text-off-white">
-            BAG
+        <SheetHeader className="border-b border-black/10 px-6 py-5">
+          <SheetTitle className="editorial-display text-left text-sm tracking-[0.3em] text-[#111]">
+            Your cart{bagCount > 0 ? ` (${bagCount})` : ""}
           </SheetTitle>
         </SheetHeader>
         <div className="flex flex-col gap-4 px-6 py-6">
@@ -60,7 +60,7 @@ export function BagLink({ isAuthenticated }: { isAuthenticated: boolean }) {
             <div key={item.variantId} className="flex justify-between gap-3 text-sm">
               <div>
                 <p className="uppercase tracking-[0.08em]">{item.productName}</p>
-                <p className="mt-1 text-stone">
+                <p className="mt-1 text-[#6f6b66]">
                   {item.size} · {item.quantity}
                 </p>
               </div>
@@ -68,21 +68,21 @@ export function BagLink({ isAuthenticated }: { isAuthenticated: boolean }) {
             </div>
           ))}
           {cart && cart.items.length === 0 ? (
-            <p className="text-sm text-stone">Your bag is empty.</p>
+            <p className="text-sm text-[#6f6b66]">Your bag is empty.</p>
           ) : null}
           <Link
             href="/cart"
             onClick={() => setOpen(false)}
-            className="mt-4 flex h-12 items-center justify-center border border-white/20 text-[0.65rem] tracking-[0.2em] uppercase"
+            className="mk-outline mt-4 border-black text-[#111]"
           >
             View bag
           </Link>
           <Link
             href="/checkout"
             onClick={() => setOpen(false)}
-            className="flex h-12 items-center justify-center border border-off-white text-[0.65rem] tracking-[0.2em] uppercase"
+            className="mk-solid hover:opacity-90"
           >
-            Checkout
+            Proceed to checkout
           </Link>
         </div>
       </SheetContent>

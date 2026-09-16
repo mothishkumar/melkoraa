@@ -39,7 +39,7 @@ export function InventoryTable({ rows }: { rows: InventoryListItem[] }) {
   return (
     <div className="space-y-3">
       <AdminNotice message={notice} tone="error" />
-      <div className="overflow-x-auto">
+      <div className="admin-panel overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -56,7 +56,7 @@ export function InventoryTable({ rows }: { rows: InventoryListItem[] }) {
           </TableHeader>
           <TableBody>
             {rows.map((row) => (
-              <TableRow key={row.variantId} className={row.available <= row.reorderLevel ? "bg-white/[0.03]" : undefined}>
+              <TableRow key={row.variantId} className={row.available <= row.reorderLevel ? "bg-amber-50/80" : undefined}>
                 <TableCell>{row.productName}</TableCell>
                 <TableCell className="font-mono text-xs">{row.sku}</TableCell>
                 <TableCell>
