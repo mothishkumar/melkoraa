@@ -84,6 +84,25 @@ npm test
 npm run export
 ```
 
+## Device & API integration testing (Phase 6)
+
+See **`melkoraa-mobile/MOBILE_DEVICE_TEST_CHECKLIST.md`** for the full Pass/Fail matrix.
+
+| Scenario | API URL | Notes |
+| --- | --- | --- |
+| Catalog on real device | `https://www.melkoraa.in/api/v1` | Works today against production |
+| Cart / checkout / orders | Local `melkoraa_mobile` API via LAN IP | Production returns 401 until `main` deploys Bearer (`7467fb4`) |
+| Physical device | Never use `localhost` in `EXPO_PUBLIC_API_URL` | Phone resolves localhost to itself |
+
+```bash
+# Terminal 1 — API from melkoraa_mobile branch
+npm run dev
+
+# Terminal 2 — mobile app (replace with your LAN IP)
+cd melkoraa-mobile
+EXPO_PUBLIC_API_URL=http://192.168.x.x:4317/api/v1 npm start
+```
+
 ## Store builds (not submitted from this branch)
 
 EAS profiles in `melkoraa-mobile/eas.json`:

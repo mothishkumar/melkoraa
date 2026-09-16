@@ -3,8 +3,22 @@ export type AppEnvironment = "development" | "production";
 const DEFAULT_PROD_API_URL = "https://www.melkoraa.in/api/v1";
 const DEFAULT_PROD_SITE_URL = "https://www.melkoraa.in";
 
-const PRIVATE_HOST_PATTERN =
+export const PRIVATE_HOST_PATTERN =
   /(^|\/\/)(localhost|127\.0\.0\.1|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:|\/|$)/i;
+
+export function isPrivateNetworkApiUrl(url: string): boolean {
+  return PRIVATE_HOST_PATTERN.test(url);
+}
+
+export function getPhysicalDeviceApiWarning(url: string): string | null {
+  if (!isPrivateNetworkApiUrl(url)) return null;
+
+  if (/(localhost|127\.0\.0\.1)/i.test(url)) {
+    return "localhost API URLs do not work on physical devices. Use your computer's LAN IP (for example http://192.168.x.x:4317/api/v1) or production https://www.melkoraa.in/api/v1.";
+  }
+
+  return "Private-network API URLs only work when the device shares the same network as the API host.";
+}
 
 function trimUrl(value: string): string {
   return value.trim().replace(/\/$/, "");

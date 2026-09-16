@@ -4,7 +4,11 @@ Backend is consumed from `https://www.melkoraa.in/api/v1` with Supabase Auth.
 
 ## Authenticated REST APIs (cookie or Bearer)
 
-**Status:** Resolved on `melkoraa_mobile`. Protected `/api/v1/*` routes accept Supabase cookies (web) or `Authorization: Bearer <access_token>` (mobile).
+**Status on `melkoraa_mobile`:** Resolved in commit `7467fb4`. Protected `/api/v1/*` routes accept Supabase cookies (web) or `Authorization: Bearer <access_token>` (mobile).
+
+**Production blocker:** `https://www.melkoraa.in` is deployed from `main`, which does **not** include Bearer auth yet. Mobile devices pointed at production will get **401** on cart, wishlist, checkout, addresses, orders, and `GET /auth/me` even with a valid Supabase session. Public catalog endpoints still work.
+
+**Device testing:** Run the Next.js API locally from `melkoraa_mobile` and set `EXPO_PUBLIC_API_URL=http://<your-LAN-IP>:4317/api/v1` for full authenticated flows on physical hardware. See `MOBILE_DEVICE_TEST_CHECKLIST.md`.
 
 ## Auth deep links (password reset / email verify)
 

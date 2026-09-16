@@ -44,7 +44,7 @@ export function AuthGate({ title, message, children, headerTitle }: AuthGateProp
         <LoginRequired
           title={title}
           message={message}
-          apiNote="Protected APIs require Bearer token support on the backend when cookie sessions are unavailable."
+          apiNote="Protected APIs need Bearer support on the API host. Production www.melkoraa.in may return 401 until main deploys commit 7467fb4 — use a local melkoraa_mobile API for full device testing."
         />
       </SafeScreen>
     );
