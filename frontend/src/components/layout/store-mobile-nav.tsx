@@ -1,0 +1,73 @@
+
+import { Link } from "react-router-dom";
+import { Menu } from "lucide-react";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { BrandMark } from "@/components/layout/brand-mark";
+import { LogoutButton } from "@/features/auth";
+import { storeNav } from "@/lib/navigation";
+
+export function StoreMobileNav({
+  isAuthenticated = false,
+  isStaff = false,
+}: {
+  isAuthenticated?: boolean;
+  isStaff?: boolean;
+}) {
+  return (
+    <Sheet>
+      <SheetTrigger
+        className="inline-flex size-10 items-center justify-center text-off-white md:hidden"
+        aria-label="Open menu"
+      >
+        <Menu className="size-5" />
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="w-[min(100%,320px)] rounded-none border-white/10 bg-black p-0 text-off-white shadow-none"
+      >
+        <SheetHeader className="border-b border-white/10 px-6 py-5">
+          <SheetTitle className="text-left">
+            <BrandMark href="/" className="text-sm text-off-white" />
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col gap-1 px-6 py-8" aria-label="Mobile">
+          {storeNav.map((item) => (
+            <Link
+              key={item.href}
+              to={item.href}
+              className="editorial-display py-3 text-2xl tracking-[0.08em] text-off-white"
+            >
+              {item.label}
+            </Link>
+          ))}
+          {isStaff ? (
+            <Link to="/admin" className="label-caps mt-8 py-2">
+              ADMIN
+            </Link>
+          ) : null}
+          <Link
+            to={isAuthenticated ? "/account" : "/login"}
+            className={`label-caps py-2 ${isStaff ? "" : "mt-8"}`}
+          >
+            {isAuthenticated ? "ACCOUNT" : "LOGIN"}
+          </Link>
+          {isAuthenticated ? (
+            <div className="py-2">
+              <LogoutButton />
+            </div>
+          ) : null}
+          <Link to="/cart" className="label-caps py-2">
+            BAG
+          </Link>
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}

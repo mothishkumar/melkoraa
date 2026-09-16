@@ -1,0 +1,35 @@
+{
+  "name": "melkoraa-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --import ./src/register.mjs src/index.ts",
+    "start": "tsx --import ./src/register.mjs src/index.ts",
+    "build": "tsc --noEmit",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.45.2",
+    "express": "^4.21.2",
+    "postgres": "^3.4.9",
+    "razorpay": "^2.9.8",
+    "server-only": "file:./vendor/server-only",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20",
+    "tsx": "^4.23.13",
+    "typescript": "^5"
+  }
+}
