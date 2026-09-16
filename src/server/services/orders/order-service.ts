@@ -12,10 +12,8 @@ async function loadDetail(orderId: string): Promise<OrderDetailDto> {
   if (!order) {
     throw notFoundError("ORDER_NOT_FOUND", "Order not found.");
   }
-  const [items, payment] = await Promise.all([
-    orderRepo.listOrderItems(orderId),
-    paymentRepo.findPaymentForOrder(orderId),
-  ]);
+  const items = await orderRepo.listOrderItems(orderId);
+  const payment = await paymentRepo.findPaymentForOrder(orderId);
   return mapOrderDetail(order, items, payment);
 }
 
@@ -77,11 +75,9 @@ export async function getAdminOrder(orderId: string) {
   if (!order) {
     throw notFoundError("ORDER_NOT_FOUND", "Order not found.");
   }
-  const [items, payment, history] = await Promise.all([
-    orderRepo.listOrderItems(order.id),
-    paymentRepo.findPaymentForOrder(order.id),
-    orderRepo.listOrderStatusHistory(order.id),
-  ]);
+  const items = await orderRepo.listOrderItems(order.id);
+  const payment = await paymentRepo.findPaymentForOrder(order.id);
+  const history = await orderRepo.listOrderStatusHistory(order.id);
   return {
     ...mapOrderDetail(order, items, payment),
     userId: order.userId,

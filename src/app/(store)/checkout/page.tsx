@@ -9,10 +9,8 @@ export const metadata = {
 
 export default async function CheckoutPage() {
   const { user } = await requireAuth("/checkout");
-  const [cart, addresses] = await Promise.all([
-    getCart(user.id),
-    listCustomerAddresses(user.id),
-  ]);
+  const cart = await getCart(user.id);
+  const addresses = await listCustomerAddresses(user.id);
 
   return (
     <div className="mx-auto max-w-[1600px] px-4 py-12 md:px-8 md:py-16">

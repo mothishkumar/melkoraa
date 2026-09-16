@@ -21,11 +21,9 @@ export default async function ProductsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const [{ products, pagination, query }, categories, user] = await Promise.all([
-    loadPublicCatalog(params),
-    listPublicCategories(1, 50),
-    getCurrentUser(),
-  ]);
+  const { products, pagination, query } = await loadPublicCatalog(params);
+  const categories = await listPublicCategories(1, 50);
+  const user = await getCurrentUser();
   let wishlisted = new Set<string>();
   if (user) {
     const wishlist = await getWishlist(user.id);

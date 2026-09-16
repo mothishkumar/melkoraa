@@ -14,15 +14,12 @@ function countFor(
 }
 
 export async function getAdminDashboard(): Promise<AdminDashboardSnapshot> {
-  const [productRows, inventory, orderStatus, paymentStatus, recentOrders, ledger] =
-    await Promise.all([
-      productsRepo.countProductsByStatus(),
-      inventoryRepo.countInventoryStates(),
-      orderRepo.countOrdersByStatus(),
-      orderRepo.countOrdersByPaymentStatus(),
-      orderRepo.listOrdersAdmin({ page: 1, pageSize: 8 }),
-      inventoryRepo.listRecentLedger(12),
-    ]);
+  const productRows = await productsRepo.countProductsByStatus();
+  const inventory = await inventoryRepo.countInventoryStates();
+  const orderStatus = await orderRepo.countOrdersByStatus();
+  const paymentStatus = await orderRepo.countOrdersByPaymentStatus();
+  const recentOrders = await orderRepo.listOrdersAdmin({ page: 1, pageSize: 8 });
+  const ledger = await inventoryRepo.listRecentLedger(12);
 
   const items = await orderRepo.listOrderItemsForOrders(recentOrders.rows.map((row) => row.id));
   const itemsByOrder = new Map<string, typeof items>();

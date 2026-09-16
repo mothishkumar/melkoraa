@@ -30,10 +30,8 @@ async function loadDetail(orderId: string, db?: OrderDb): Promise<OrderDetailDto
   if (!order) {
     throw notFoundError("ORDER_NOT_FOUND", "Order not found.");
   }
-  const [items, payment] = await Promise.all([
-    orderRepo.listOrderItems(orderId, db),
-    paymentRepo.findPaymentForOrder(orderId, db),
-  ]);
+  const items = await orderRepo.listOrderItems(orderId, db);
+  const payment = await paymentRepo.findPaymentForOrder(orderId, db);
   return mapOrderDetail(order, items, payment);
 }
 

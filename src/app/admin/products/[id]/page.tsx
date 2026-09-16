@@ -28,10 +28,8 @@ export default async function AdminProductDetailPage({
     notFoundIfMissing(error);
   }
   if (!product) notFound();
-  const [categories, drops] = await Promise.all([
-    listAdminCategories(1, 50),
-    listAdminDrops(1, 50),
-  ]);
+  const categories = await listAdminCategories(1, 50);
+  const drops = await listAdminDrops(1, 50);
 
   return (
     <div className="mx-auto max-w-5xl">

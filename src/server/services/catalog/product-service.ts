@@ -65,11 +65,9 @@ export async function listPublicProducts(query: PublicProductQuery) {
   });
 
   const ids = rows.map((row) => row.id);
-  const [images, categoryRows, availability] = await Promise.all([
-    productsRepo.listImagesForProducts(ids),
-    productsRepo.listCategoriesForProducts(ids),
-    productsRepo.listAvailabilityForProducts(ids),
-  ]);
+  const images = await productsRepo.listImagesForProducts(ids);
+  const categoryRows = await productsRepo.listCategoriesForProducts(ids);
+  const availability = await productsRepo.listAvailabilityForProducts(ids);
 
   const imagesByProduct = new Map<string, ReturnType<typeof mapImage>[]>();
   for (const image of images) {
@@ -112,13 +110,11 @@ export async function getPublicProductBySlug(slug: string): Promise<ProductDetai
     throw notFoundError("PRODUCT_NOT_FOUND", "Product not found");
   }
 
-  const [images, categoryRows, variants, drop, editions] = await Promise.all([
-    productsRepo.listImagesForProducts([product.id]),
-    productsRepo.listCategoriesForProducts([product.id]),
-    productsRepo.listVariantsWithAvailability(product.id),
-    productsRepo.findPrimaryDropForProduct(product.id, true),
-    productsRepo.listEditionsForProduct(product.id),
-  ]);
+  const images = await productsRepo.listImagesForProducts([product.id]);
+  const categoryRows = await productsRepo.listCategoriesForProducts([product.id]);
+  const variants = await productsRepo.listVariantsWithAvailability(product.id);
+  const drop = await productsRepo.findPrimaryDropForProduct(product.id, true);
+  const editions = await productsRepo.listEditionsForProduct(product.id);
 
   return {
     id: product.id,
@@ -147,11 +143,9 @@ export async function listAdminProducts(query: {
 }) {
   const { rows, total } = await productsRepo.listAdminProducts(query);
   const ids = rows.map((row) => row.id);
-  const [images, categoryRows, variantCounts] = await Promise.all([
-    productsRepo.listImagesForProducts(ids),
-    productsRepo.listCategoriesForProducts(ids),
-    productsRepo.listVariantCountsForProducts(ids),
-  ]);
+  const images = await productsRepo.listImagesForProducts(ids);
+  const categoryRows = await productsRepo.listCategoriesForProducts(ids);
+  const variantCounts = await productsRepo.listVariantCountsForProducts(ids);
   const imagesByProduct = new Map<string, ReturnType<typeof mapImage>[]>();
   for (const image of images) {
     const list = imagesByProduct.get(image.productId) ?? [];
@@ -192,13 +186,11 @@ export async function getAdminProduct(id: string) {
     throw notFoundError("PRODUCT_NOT_FOUND", "Product not found");
   }
 
-  const [images, categoryRows, variants, drop, editions] = await Promise.all([
-    productsRepo.listImagesForProducts([product.id]),
-    productsRepo.listCategoriesForProducts([product.id]),
-    productsRepo.listVariantsWithAvailability(product.id),
-    productsRepo.findPrimaryDropForProduct(product.id, false),
-    productsRepo.listEditionsForProduct(product.id),
-  ]);
+  const images = await productsRepo.listImagesForProducts([product.id]);
+  const categoryRows = await productsRepo.listCategoriesForProducts([product.id]);
+  const variants = await productsRepo.listVariantsWithAvailability(product.id);
+  const drop = await productsRepo.findPrimaryDropForProduct(product.id, false);
+  const editions = await productsRepo.listEditionsForProduct(product.id);
 
   return {
     id: product.id,
