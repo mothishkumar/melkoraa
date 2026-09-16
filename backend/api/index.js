@@ -36155,11 +36155,9 @@ var require_main = __commonJS({
 });
 
 // src/register.mjs
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
-var require2 = createRequire(import.meta.url);
 var shim = fileURLToPath(new URL("./shims/server-only-empty.cjs", import.meta.url));
-var Module = require2("node:module");
+var Module = require("node:module");
 var original = Module._resolveFilename;
 Module._resolveFilename = function(request, parent, isMain, options) {
   if (request === "server-only") {
@@ -36167,9 +36165,6 @@ Module._resolveFilename = function(request, parent, isMain, options) {
   }
   return original.call(this, request, parent, isMain, options);
 };
-
-// src/vercel-handler.ts
-import serverless from "serverless-http";
 
 // src/app.ts
 import cookieParser from "cookie-parser";
@@ -49974,21 +49969,21 @@ webhooksRouter.post(
 
 // src/app.ts
 function createApp() {
-  const app2 = express2();
+  const app = express2();
   const corsOrigins = [
     process.env.CORS_ORIGIN ?? "http://localhost:5173",
     process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174"
   ];
-  app2.use(
+  app.use(
     cors({
       origin: corsOrigins,
       credentials: true
     })
   );
-  app2.use("/api/v1/webhooks", webhooksRouter);
-  app2.use(express2.json());
-  app2.use(cookieParser());
-  app2.use(authMiddleware);
+  app.use("/api/v1/webhooks", webhooksRouter);
+  app.use(express2.json());
+  app.use(cookieParser());
+  app.use(authMiddleware);
   const api = express2.Router();
   api.use("/health", healthRouter);
   api.use("/auth", authRouter);
@@ -50002,16 +49997,15 @@ function createApp() {
   api.use("/payments", requireServerEnv, paymentsRouter);
   api.use("/orders", requireServerEnv, ordersRouter);
   api.use("/admin", adminRouter);
-  app2.use("/api/v1", api);
-  app2.get("/", (_req, res) => {
+  app.use("/api/v1", api);
+  app.get("/", (_req, res) => {
     res.json({ service: "melkoraa-api", version: "v1" });
   });
-  return app2;
+  return app;
 }
 
 // src/vercel-handler.ts
-var app = createApp();
-var vercel_handler_default = serverless(app);
+var vercel_handler_default = createApp();
 export {
   vercel_handler_default as default
 };
