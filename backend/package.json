@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --import ./src/register.mjs src/index.ts",
     "start": "tsx --import ./src/register.mjs src/index.ts",
-    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "bundle:vercel": "node scripts/bundle-vercel-api.mjs",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
