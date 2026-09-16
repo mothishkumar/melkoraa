@@ -1,6 +1,3 @@
-"use client";
-
-import { useNavigate } from "react-router-dom"
 import { useAdminRefresh } from "@/hooks/use-admin-refresh";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -35,7 +32,6 @@ export function CollectionForm({
   collection?: PublicCollection;
   onSaved?: () => void;
 }) {
-  const navigate = useNavigate()
   const { refresh } = useAdminRefresh();
   const { canMutate } = useAdminAccess();
   const [notice, setNotice] = useState<string | null>(null);

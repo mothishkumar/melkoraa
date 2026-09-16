@@ -59,7 +59,6 @@ export function ImageManager({ product }: { product: AdminProductDetail }) {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {product.images.map((image) => (
           <figure key={image.id} className="border border-white/10 p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image.url} alt={image.alt || product.name} className="aspect-[3/4] w-full object-cover" />
             <figcaption className="mt-2 text-xs text-muted-foreground">
               {image.imageType} · {image.sortOrder}

@@ -1,6 +1,3 @@
-"use client";
-
-import { useNavigate } from "react-router-dom"
 import { useAdminRefresh } from "@/hooks/use-admin-refresh";
 import { useState } from "react";
 
@@ -29,7 +26,6 @@ import { userFacingApiMessage } from "@/lib/api/client";
 import type { PublicCollection } from "@/types/catalog";
 
 export function CollectionTable({ collections }: { collections: PublicCollection[] }) {
-  const navigate = useNavigate()
   const { refresh } = useAdminRefresh();
   const { canMutate } = useAdminAccess();
   const [notice, setNotice] = useState<string | null>(null);

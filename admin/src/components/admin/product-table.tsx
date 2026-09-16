@@ -1,7 +1,4 @@
-"use client";
-
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom"
 import { useAdminRefresh } from "@/hooks/use-admin-refresh";
 import { useState } from "react";
 
@@ -23,7 +20,6 @@ import { formatInr } from "@/lib/catalog/money";
 import type { AdminProductListItem } from "@/types/catalog";
 
 export function ProductTable({ products }: { products: AdminProductListItem[] }) {
-  const navigate = useNavigate()
   const { refresh } = useAdminRefresh();
   const { canMutate } = useAdminAccess();
   const [notice, setNotice] = useState<string | null>(null);
@@ -50,7 +46,6 @@ export function ProductTable({ products }: { products: AdminProductListItem[] })
                 <TableCell>
                   <div className="flex items-center gap-3">
                     {product.primaryImage?.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={product.primaryImage.url}
                         alt={product.primaryImage.alt || product.name}
