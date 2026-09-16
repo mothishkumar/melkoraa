@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -49,12 +50,21 @@ cpSync(
   resolve(apiShims, "server-only-empty.cjs"),
 );
 
+// Optional Build Output API artifacts for `vercel deploy --prebuilt`.
 const funcDir = resolve(backendRoot, ".vercel/output/functions/api/index.func");
 rmSync(resolve(backendRoot, ".vercel/output"), { recursive: true, force: true });
 mkdirSync(funcDir, { recursive: true });
 cpSync(apiOut, resolve(funcDir, "index.js"));
 cpSync(apiShims, resolve(funcDir, "shims"), { recursive: true });
 cpSync(sharedRoot, resolve(funcDir, ".vercel-shared-src"), { recursive: true });
+for (const file of ["package.json", "package-lock.json"]) {
+  cpSync(resolve(backendRoot, file), resolve(funcDir, file));
+}
+if (existsSync(resolve(backendRoot, "vendor"))) {
+  cpSync(resolve(backendRoot, "vendor"), resolve(funcDir, "vendor"), { recursive: true });
+}
+execSync("npm ci --omit=dev --ignore-scripts", { cwd: funcDir, stdio: "inherit" });
+
 writeFileSync(
   resolve(funcDir, ".vc-config.json"),
   JSON.stringify(
