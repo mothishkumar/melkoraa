@@ -25,7 +25,7 @@ export default function ProductDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { product, loading, error, reload } = useProduct(slug);
   const { addItem, mutating } = useCart();
-  const { toggle, isSaved } = useWishlistContext();
+  const { toggle, isSaved, isToggling } = useWishlistContext();
   const { session } = useAuth();
 
   const colorsList = useMemo(
@@ -148,6 +148,7 @@ export default function ProductDetailScreen() {
               <Button
                 label={isSaved(product.id) ? "Saved" : "Wishlist"}
                 variant="secondary"
+                loading={isToggling(product.id)}
                 onPress={handleWishlist}
               />
             </View>

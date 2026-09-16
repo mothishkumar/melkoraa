@@ -1,27 +1,22 @@
 # MELKORAA Mobile API Gaps
 
-Backend is **read-only** from the mobile branch. The app consumes `https://www.melkoraa.in/api/v1` and Supabase Auth.
+Backend is consumed from `https://www.melkoraa.in/api/v1` with Supabase Auth.
 
 ## Authenticated REST APIs (cookie or Bearer)
 
-**Status:** Resolved on `melkoraa_mobile`. Protected `/api/v1/*` routes accept **either** Supabase HTTP cookies (web) **or** `Authorization: Bearer <access_token>` (mobile). `getCurrentUser()` / `requireApiAuth()` resolve the same Supabase user identity from both mechanisms.
-
-**Mobile behavior:**
-- Sends `Authorization: Bearer <access_token>` on protected API calls.
-- Refresh-on-401 + single retry; invalid/expired tokens return **401 UNAUTHENTICATED**.
-- Cart, wishlist, checkout, addresses, orders, and `GET /auth/me` use the authenticated user from the JWT — never a body `userId`.
+**Status:** Resolved on `melkoraa_mobile`. Protected `/api/v1/*` routes accept Supabase cookies (web) or `Authorization: Bearer <access_token>` (mobile).
 
 ## Auth deep links (password reset / email verify)
 
-**Gap:** Supabase `resetPasswordForEmail` and signup links target web `{SITE_URL}/auth/callback`. Mobile scheme `melkoraa://` is registered in `app.json` but **not** wired to exchange PKCE codes in-app.
+**Status:** Phase 5 wires `melkoraa://auth/callback` for Supabase email links. Recovery sessions route to reset-password; other sessions route to profile.
 
-**Phase 3 status:** Forgot-password sends email via Supabase. In-app `reset-password` screen supports `updateUser({ password })` when a recovery session exists. Completing reset from email on device requires deep-link handling (future).
+**Remaining:** Add the mobile redirect URL (`melkoraa://auth/callback`) in the Supabase dashboard Auth → URL configuration allow list before testing email flows in production.
 
 ## Razorpay native SDK
 
-**Gap:** Checkout uses a **WebView** loading `checkout.razorpay.com/v1/checkout.js` (mirrors web). `react-native-razorpay` is not linked in Expo Go.
+**Gap:** Checkout uses a **WebView** loading `checkout.razorpay.com/v1/checkout.js`. `react-native-razorpay` is not linked in Expo Go.
 
-**Phase 4 status:** Payment opens WebView modal → user pays → app calls `POST /payments/verify` → success screen only when server reports `paymentStatus: paid`. Native SDK can be added in a dev-client build later.
+**Phase 5 status:** WebView origin whitelist restricted to Razorpay domains. Success screen only after `POST /payments/verify` reports `paymentStatus: paid`. Native SDK can be added in a dev-client build later.
 
 ## Guest cart
 
@@ -41,4 +36,8 @@ Checkout is **`POST /api/v1/checkout` only**. `POST /api/v1/payments/create-orde
 
 ## Environment
 
-Mobile needs `EXPO_PUBLIC_API_URL` and Supabase public keys in `melkoraa-mobile/.env` (see `.env.example`). Never commit `.env`.
+Mobile needs `EXPO_PUBLIC_API_URL`, Supabase public keys, and `EXPO_PUBLIC_APP_ENV` in `melkoraa-mobile/.env` (see `.env.example`). Never commit `.env`.
+
+## Offline / cache
+
+No local catalog cache or offline cart sync. The app shows an offline banner and surfaces network errors; full offline shopping is out of scope for Phase 5.

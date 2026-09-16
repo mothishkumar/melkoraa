@@ -2,6 +2,7 @@ import { Image } from "expo-image";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import type { PublicCollection } from "@/src/api/types/catalog";
+import { brand } from "@/src/brand";
 import { AppText } from "@/src/components/ui/AppText";
 import { colors, radii, spacing } from "@/src/theme";
 
@@ -11,19 +12,29 @@ type HeroBannerProps = {
 };
 
 export function HeroBanner({ collection, onPress }: HeroBannerProps) {
-  const title = collection?.name ?? "Curated Drops";
-  const subtitle = collection?.description ?? "Limited pieces. Elevated essentials.";
+  const title = collection?.name ?? brand.drop.name;
+  const subtitle = collection?.description ?? brand.tagline;
 
   return (
-    <Pressable style={styles.container} onPress={onPress} disabled={!onPress}>
+    <Pressable
+      style={styles.container}
+      onPress={onPress}
+      disabled={!onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${brand.drop.label}. ${title}`}>
       {collection?.heroImageUrl ? (
-        <Image source={{ uri: collection.heroImageUrl }} style={styles.image} contentFit="cover" />
+        <Image
+          source={{ uri: collection.heroImageUrl }}
+          style={styles.image}
+          contentFit="cover"
+          accessibilityLabel={title}
+        />
       ) : (
         <View style={styles.fallback} />
       )}
       <View style={styles.overlay} />
       <View style={styles.copy}>
-        <AppText variant="label" color={colors.accentInverse}>Featured</AppText>
+        <AppText variant="label" color={colors.accentInverse}>{brand.drop.code}</AppText>
         <AppText variant="h1" color={colors.accentInverse} style={styles.title}>{title}</AppText>
         <AppText variant="body" color={colors.accentInverse} style={styles.subtitle}>{subtitle}</AppText>
       </View>

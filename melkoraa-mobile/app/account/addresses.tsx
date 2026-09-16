@@ -63,7 +63,12 @@ function AddressesContent() {
             {address.city}, {address.state} {address.postalCode}
           </AppText>
           {address.isDefault ? <AppText variant="caption">Default</AppText> : null}
-          <Button label="Remove" variant="ghost" onPress={() => remove(address.id)} />
+          <Button
+            label="Remove"
+            variant="ghost"
+            loading={mutating}
+            onPress={() => remove(address.id)}
+          />
         </View>
       ))}
 

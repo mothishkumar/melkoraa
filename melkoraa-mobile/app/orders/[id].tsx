@@ -1,6 +1,8 @@
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, View } from "react-native";
 
+import { useAsyncGuard } from "@/src/hooks/use-async-guard";
+
 import { AuthGate } from "@/src/components/auth/AuthGate";
 import { AppHeader } from "@/src/components/layout/AppHeader";
 import { SafeScreen } from "@/src/components/ui/SafeScreen";
@@ -15,6 +17,7 @@ import { formatPrice } from "@/src/utils/format";
 function OrderDetailContent() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { order, loading, error, refresh } = useOrder(id);
+  const { busy: cancelling, run: runCancel } = useAsyncGuard();
 
   if (loading) {
     return <AppText muted style={styles.pad}>Loading order…</AppText>;
@@ -26,10 +29,12 @@ function OrderDetailContent() {
 
   async function handleCancel() {
     if (!order) return;
-    const result = await orderService.cancel(order.id);
-    if (result.status === "success") {
-      refresh();
-    }
+    await runCancel(async () => {
+      const result = await orderService.cancel(order.id);
+      if (result.status === "success") {
+        await refresh();
+      }
+    });
   }
 
   return (
@@ -61,7 +66,12 @@ function OrderDetailContent() {
       </AppText>
 
       {order.status === "pending" && order.paymentStatus === "pending" ? (
-        <Button label="Cancel order" variant="secondary" onPress={handleCancel} />
+        <Button
+          label="Cancel order"
+          variant="secondary"
+          loading={cancelling}
+          onPress={handleCancel}
+        />
       ) : null}
     </ScrollView>
   );

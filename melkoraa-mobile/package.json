@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/netinfo": "12.0.1",
     "@supabase/supabase-js": "^2.116.0",
     "expo": "~57.0.23",
     "expo-constants": "~57.0.18",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "^22.20.3",
     "@types/react": "~19.2.2",
     "eslint": "^10.10.0",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -46,7 +48,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "export": "expo export --platform all"
   },
   "private": true
 }

@@ -42,8 +42,7 @@ export default function ResetPasswordScreen() {
       <SafeScreen>
         <AppText variant="h2">Reset password</AppText>
         <AppText muted style={styles.copy}>
-          Open the reset link from your email on this device, or request a new link from forgot password.
-          Completing reset via `melkoraa://` deep links is not wired yet — see MOBILE_API_GAPS.md.
+          Open the reset link from your email on this device to continue, or request a new link from forgot password.
         </AppText>
       </SafeScreen>
     );

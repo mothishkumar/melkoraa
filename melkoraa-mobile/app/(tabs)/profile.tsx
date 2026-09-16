@@ -7,10 +7,12 @@ import { SafeScreen } from "@/src/components/ui/SafeScreen";
 import { AppText } from "@/src/components/ui/AppText";
 import { Button } from "@/src/components/ui/Button";
 import { useAuth } from "@/src/auth/auth-context";
+import { useAsyncGuard } from "@/src/hooks/use-async-guard";
 import { colors, spacing } from "@/src/theme";
 
 function ProfileContent() {
   const { session, profile, signOut } = useAuth();
+  const { busy: signingOut, run: runSignOut } = useAsyncGuard();
 
   return (
     <SafeScreen edges={["top"]}>
@@ -22,7 +24,7 @@ function ProfileContent() {
           <AppText variant="caption" muted>Role: {profile.role}</AppText>
         ) : (
           <AppText variant="caption" muted>
-            Profile API may be unavailable until Bearer auth is enabled on the backend.
+            Profile details will appear once your account syncs.
           </AppText>
         )}
 
@@ -39,10 +41,13 @@ function ProfileContent() {
         <Button
           label="Sign out"
           variant="secondary"
-          onPress={async () => {
-            await signOut();
-            router.replace("/(auth)/login");
-          }}
+          loading={signingOut}
+          onPress={() =>
+            runSignOut(async () => {
+              await signOut();
+              router.replace("/(auth)/login");
+            })
+          }
         />
       </View>
     </SafeScreen>

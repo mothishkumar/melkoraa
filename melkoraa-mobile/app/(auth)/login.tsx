@@ -59,6 +59,7 @@ export default function LoginScreen() {
           <AppText muted>Sign in to shop, save pieces, and checkout.</AppText>
 
           <TextInput
+            accessibilityLabel="Email"
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="Email"
@@ -68,6 +69,7 @@ export default function LoginScreen() {
             style={styles.input}
           />
           <TextInput
+            accessibilityLabel="Password"
             secureTextEntry
             placeholder="Password"
             placeholderTextColor={colors.textMuted}

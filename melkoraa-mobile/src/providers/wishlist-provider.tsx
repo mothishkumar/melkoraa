@@ -9,7 +9,9 @@ type WishlistContextValue = {
   wishlist: WishlistDto | null;
   loading: boolean;
   authRequired: boolean;
+  togglingId: string | null;
   isSaved: (productId: string) => boolean;
+  isToggling: (productId: string) => boolean;
   toggle: (productId: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
@@ -21,6 +23,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<WishlistDto | null>(null);
   const [loading, setLoading] = useState(false);
   const [authRequired, setAuthRequired] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!session) {
@@ -51,20 +54,26 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
   const toggle = useCallback(
     async (productId: string) => {
+      if (togglingId) return;
       if (!session) {
         router.push("/(auth)/login");
         return;
       }
-      const result = await wishlistService.toggleItem(productId);
-      if (result.status === "success") {
-        setWishlist(result.data);
-        setAuthRequired(false);
-      } else if (result.status === "auth_required") {
-        setAuthRequired(true);
-        router.push("/(auth)/login");
+      setTogglingId(productId);
+      try {
+        const result = await wishlistService.toggleItem(productId);
+        if (result.status === "success") {
+          setWishlist(result.data);
+          setAuthRequired(false);
+        } else if (result.status === "auth_required") {
+          setAuthRequired(true);
+          router.push("/(auth)/login");
+        }
+      } finally {
+        setTogglingId(null);
       }
     },
-    [session],
+    [session, togglingId],
   );
 
   const value = useMemo(
@@ -72,11 +81,13 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       wishlist,
       loading,
       authRequired,
+      togglingId,
       isSaved: (productId: string) => productIds.has(productId),
+      isToggling: (productId: string) => togglingId === productId,
       toggle,
       refresh,
     }),
-    [wishlist, loading, authRequired, productIds, toggle, refresh],
+    [wishlist, loading, authRequired, togglingId, productIds, toggle, refresh],
   );
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;

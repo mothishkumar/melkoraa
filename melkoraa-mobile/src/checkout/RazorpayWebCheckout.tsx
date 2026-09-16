@@ -37,7 +37,7 @@ function buildCheckoutHtml(input: {
         order_id: ${JSON.stringify(input.razorpayOrderId)},
         name: "MELKORAA",
         prefill: { email: ${JSON.stringify(input.email ?? "")} },
-        theme: { color: "#0A0A0A" },
+        theme: { color: "#050505" },
         handler: function (response) {
           window.ReactNativeWebView.postMessage(JSON.stringify({
             type: "success",
@@ -108,7 +108,10 @@ export function RazorpayWebCheckout({
       <View style={styles.container}>
         <AppText variant="label" style={styles.label}>Secure payment</AppText>
         <WebView
-          originWhitelist={["*"]}
+          originWhitelist={[
+            "https://checkout.razorpay.com",
+            "https://api.razorpay.com",
+          ]}
           source={{
             html: buildCheckoutHtml({
               keyId,

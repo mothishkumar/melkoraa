@@ -1,7 +1,8 @@
 import type { Session, User } from "@supabase/supabase-js";
 
 import { authApi } from "@/src/api/auth";
-import { env, isSupabaseConfigured } from "@/src/config/env";
+import { mobileAuthRedirect } from "@/src/auth/auth-callback";
+import { isSupabaseConfigured } from "@/src/config/env";
 import { getSupabaseClient } from "@/src/auth/supabase";
 
 export type SignUpInput = {
@@ -60,7 +61,7 @@ export const authService = {
           first_name: input.firstName,
           last_name: input.lastName,
         },
-        emailRedirectTo: `${env.siteUrl}/auth/callback?next=/account`,
+        emailRedirectTo: mobileAuthRedirect("auth/callback"),
       },
     });
     if (error) throw new Error(mapAuthError(error.message));
@@ -79,7 +80,7 @@ export const authService = {
 
   async resetPassword(email: string) {
     const { error } = await getSupabaseClient().auth.resetPasswordForEmail(email, {
-      redirectTo: `${env.siteUrl}/auth/callback?next=/reset-password`,
+      redirectTo: mobileAuthRedirect("auth/callback"),
     });
     if (error) throw new Error(mapAuthError(error.message));
   },

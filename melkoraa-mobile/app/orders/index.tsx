@@ -36,6 +36,8 @@ function OrdersContent() {
         <Pressable
           key={order.id}
           style={styles.card}
+          accessibilityRole="button"
+          accessibilityLabel={`Order ${order.orderNumber}`}
           onPress={() => router.push(`/orders/${order.id}`)}>
           <AppText variant="h3">{order.orderNumber}</AppText>
           <AppText muted>{new Date(order.createdAt).toLocaleDateString()}</AppText>

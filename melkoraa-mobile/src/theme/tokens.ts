@@ -1,18 +1,20 @@
+import { brandColors } from "@/src/brand";
+
 export const colors = {
-  background: "#FAFAF8",
-  surface: "#FFFFFF",
+  background: brandColors.offWhite,
+  surface: brandColors.white,
   surfaceMuted: "#F2F0EC",
-  text: "#0A0A0A",
+  text: brandColors.black,
   textSecondary: "#5C5C5C",
-  textMuted: "#8A8A8A",
+  textMuted: brandColors.stone,
   border: "#E8E4DE",
-  borderStrong: "#0A0A0A",
-  accent: "#0A0A0A",
-  accentInverse: "#FFFFFF",
+  borderStrong: brandColors.black,
+  accent: brandColors.black,
+  accentInverse: brandColors.white,
   sale: "#8B2635",
   error: "#B42318",
   success: "#1F6B45",
-  overlay: "rgba(10, 10, 10, 0.45)",
+  overlay: "rgba(5, 5, 5, 0.45)",
   skeleton: "#ECE8E2",
   skeletonHighlight: "#F7F4EF",
 };

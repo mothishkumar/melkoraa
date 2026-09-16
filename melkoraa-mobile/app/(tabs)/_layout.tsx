@@ -24,6 +24,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
+          tabBarAccessibilityLabel: "Home tab",
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: "house", android: "home", web: "home" }} tintColor={color} size={24} />
           ),
@@ -33,6 +34,7 @@ export default function TabLayout() {
         name="shop"
         options={{
           title: "Shop",
+          tabBarAccessibilityLabel: "Shop tab",
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: "bag", android: "shopping_bag", web: "shopping_bag" }} tintColor={color} size={24} />
           ),
@@ -42,6 +44,7 @@ export default function TabLayout() {
         name="cart"
         options={{
           title: "Cart",
+          tabBarAccessibilityLabel: "Cart tab",
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: "cart", android: "shopping_cart", web: "shopping_cart" }} tintColor={color} size={24} />
           ),
@@ -51,6 +54,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+          tabBarAccessibilityLabel: "Profile tab",
           tabBarIcon: ({ color }) => (
             <SymbolView name={{ ios: "person", android: "person", web: "person" }} tintColor={color} size={24} />
           ),
