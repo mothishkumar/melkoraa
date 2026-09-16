@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Geist_Mono, Inter } from "next/font/google";
 
+import { getSiteUrl } from "@/lib/auth/site-url";
 import { brand } from "@/lib/brand";
 
 import "./globals.css";
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
     template: `%s — ${brand.name}`,
   },
   description: `${brand.tagline} ${brand.drop.label}. ${brand.drop.message}`,
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:4317"),
+  metadataBase: new URL(getSiteUrl()),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
