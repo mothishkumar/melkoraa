@@ -8,8 +8,7 @@
     "start": "tsx --import ./src/register.mjs src/index.ts",
     "typecheck": "tsc --noEmit",
     "bundle:vercel": "node scripts/bundle-vercel-api.mjs",
-    "lint": "eslint src",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
