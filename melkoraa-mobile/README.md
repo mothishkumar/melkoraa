@@ -9,9 +9,13 @@ React Native + Expo + TypeScript consumer app for [melkoraa.in](https://www.melk
 ```bash
 cd melkoraa-mobile
 cp .env.example .env
-# Fill EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY (from your Supabase project)
+cp .env.local.example .env.local
+# .env — shared defaults; .env.local — your LAN API URL (gitignored)
+# EXPO_PUBLIC_API_URL=http://<LAN-IP>:4317/api/v1 for physical device QA
 npm install
 ```
+
+Physical device testing: **`PHYSICAL_DEVICE_QA.md`**
 
 ## Run
 

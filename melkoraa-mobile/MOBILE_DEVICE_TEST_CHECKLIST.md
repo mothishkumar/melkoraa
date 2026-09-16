@@ -3,139 +3,130 @@
 Branch: `melkoraa_mobile`  
 Bundle IDs: `in.melkoraa.app` (iOS + Android)  
 Deep link scheme: `melkoraa://`  
-Last automated validation: 2026-09-16 (CI/agent — **not** physical devices)
-
-## Before you test on a device
-
-1. Copy `melkoraa-mobile/.env.example` → `.env`
-2. Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`
-3. Choose API target:
-   - **Production catalog only:** `EXPO_PUBLIC_API_URL=https://www.melkoraa.in/api/v1`
-   - **Full authenticated flow (cart, checkout, orders):** run the API locally from `melkoraa_mobile` (includes Bearer auth, commit `7467fb4`) and point the device at your machine's **LAN IP**, e.g. `EXPO_PUBLIC_API_URL=http://192.168.x.x:4317/api/v1`
-4. **Do not use `localhost` on a physical phone** — it refers to the phone itself
-5. Add `melkoraa://auth/callback` to Supabase Auth → URL configuration before testing password-reset email links
-6. Start Expo: `cd melkoraa-mobile && npm start` then scan QR / run dev client
-
-### Production API Bearer blocker
-
-`https://www.melkoraa.in` is deployed from `main`, which **does not yet include** Bearer auth (`7467fb4` on `melkoraa_mobile` only). Until that ships, protected mobile routes (`/auth/me`, cart, wishlist, checkout, orders) will return **401** against production even with a valid Supabase session.
-
-| Target | Public catalog | Bearer-protected APIs |
-| --- | --- | --- |
-| `www.melkoraa.in` (prod) | Works | **401 expected** until main deploys Bearer |
-| Local API on `melkoraa_mobile` | Works | Works with valid Supabase JWT |
+Setup guide: **`PHYSICAL_DEVICE_QA.md`**
 
 ---
 
-## Automated checks (agent-run)
+## A. Automated checks (CI / agent — not physical devices)
 
-These were executed in the cloud agent environment on 2026-09-16. They validate configuration and client behavior — **not** real Android/iOS hardware.
+Last run: 2026-09-16 (cloud agent). **Does not substitute for hardware QA.**
 
 | Check | Result | Notes |
 | --- | --- | --- |
 | `npm run typecheck` | **Pass** | |
 | `npm run lint` | **Pass** | |
-| `npm test` | **Pass** | Includes API client Bearer/401-retry tests |
+| `npm test` | **Pass** | API client Bearer / 401-retry unit tests |
 | `npx expo export --platform web` | **Pass** | 28 static routes |
-| Prod `GET /api/v1/health` | **Pass** | HTTP 200 |
-| Prod `GET /api/v1/products` | **Pass** | HTTP 200, public catalog |
-| Prod `GET /api/v1/auth/me` (no auth) | **Pass** | HTTP 401 (expected) |
-| Prod `GET /api/v1/auth/me` (invalid Bearer) | **Pass** | HTTP 401 |
-| Prod Bearer cart/checkout with real JWT | **Not run** | Blocked: prod lacks Bearer; no device credentials in agent |
-| Physical Android device | **Not performed** | Requires manual QA |
-| Physical iOS device | **Not performed** | Requires manual QA |
+| `npm run verify:local-api` (localhost) | **Partial** | health 200, auth/cart 401; `/products` needs root `DATABASE_URL` |
+| Physical Android | **Not performed** | |
+| Physical iOS | **Not performed** | |
 
 ---
 
-## Manual device checklist
+## B. Local API verification (`melkoraa_mobile` branch)
 
-Mark each row after testing on hardware. Leave blank until tested — do not assume pass.
+Run on your PC **before** handing a phone to testers. Uses `npm run verify:local-api` — pass `API_URL` or `EXPO_PUBLIC_API_URL`; **never hardcode an IP in the repo**.
 
-### Environment & connectivity
+```bash
+# Terminal 1 (repo root)
+npm run dev
 
-| Test | Android | iOS | Notes |
+# Terminal 2
+cd melkoraa-mobile
+API_URL=http://localhost:4317/api/v1 npm run verify:local-api
+API_URL=http://<LAN-IP>:4317/api/v1 npm run verify:local-api
+```
+
+| Endpoint | Expected | Agent (localhost) | Your LAN run |
 | --- | --- | --- | --- |
-| App launches via Expo Go / dev client | | | |
-| `.env` Supabase keys load; no crash on startup | | | |
-| Production API URL loads catalog (shop/home) | | | |
-| LAN/local API URL works when phone on same Wi‑Fi | | | |
-| Offline banner appears when network disabled | | | |
-| No tokens or secrets visible in Metro/device logs | | | |
+| `GET /health` | 200 | Pass | |
+| `GET /products` | 200 | Fail (no DB in agent) | |
+| `GET /auth/me` no auth | 401 | Pass | |
+| `GET /auth/me` invalid Bearer | 401 | Pass | |
+| `GET /cart` no auth | 401 | Pass | |
+| `GET /wishlist` no auth | 401 | Pass | |
+| `GET /orders` no auth | 401 | Pass | |
+| Valid Bearer → `/auth/me` 200 | Manual | Not run (needs Supabase login) | |
+| Valid Bearer → cart CRUD | Manual | Not run | |
+
+Production `www.melkoraa.in` still returns **401 on protected routes** until `main` deploys Bearer (`7467fb4`). Use local API for authenticated device QA.
+
+---
+
+## C. Android physical device (manual — fill Pass/Fail/Notes)
+
+Phone env: `.env.local` with `EXPO_PUBLIC_API_URL=http://<LAN-IP>:4317/api/v1`  
+**Not tested by agent.**
+
+### Environment & network
+
+| Test | Pass/Fail | Notes |
+| --- | --- | --- |
+| Expo Go / dev client launches | | |
+| Phone browser opens `http://<LAN-IP>:4317/api/v1/health` | | |
+| App loads catalog from LAN API | | |
+| Offline banner when Wi‑Fi off | | |
+| No tokens in Metro logs | | |
 
 ### Auth
 
-| Test | Android | iOS | Notes |
-| --- | --- | --- | --- |
-| Sign in with email/password | | | Requires Bearer-capable API |
-| Session restores after app restart (SecureStore) | | | |
-| Sign out clears session | | | |
-| `GET /auth/me` returns profile | | | Requires Bearer-capable API |
-| Forgot password email sends | | | |
-| `melkoraa://auth/callback` opens app from email link | | | Supabase allow-list required |
-| Reset password completes in-app | | | |
+| Test | Pass/Fail | Notes |
+| --- | --- | --- |
+| Sign in | | |
+| Session restore after kill + reopen | | |
+| Sign out | | |
+| Profile / `GET /auth/me` | | |
+| `melkoraa://auth/callback` from email | | |
 
-### Catalog (public — works against prod)
+### Catalog
 
-| Test | Android | iOS | Notes |
-| --- | --- | --- | --- |
-| Home feed loads collections/products | | | |
-| Shop list + pagination | | | |
-| Product detail (variants, images) | | | |
-| Search | | | |
-| Category filter | | | |
+| Test | Pass/Fail | Notes |
+| --- | --- | --- |
+| Home / shop / PDP / search / category | | |
 
 ### Cart & wishlist
 
-| Test | Android | iOS | Notes |
-| --- | --- | --- | --- |
-| Add to bag (signed in) | | | Requires Bearer-capable API |
-| Pending add-to-bag replays after login | | | |
-| Cart list / remove item | | | |
-| Wishlist toggle + list screen | | | |
-| 401 after expired session → sign-in prompt | | | |
+| Test | Pass/Fail | Notes |
+| --- | --- | --- |
+| Add to bag | | |
+| Pending action after login | | |
+| Cart remove | | |
+| Wishlist toggle + list | | |
 
 ### Addresses & checkout
 
-| Test | Android | iOS | Notes |
-| --- | --- | --- | --- |
-| List / add / remove address | | | Requires Bearer-capable API |
-| Checkout shows server totals | | | |
-| Pay now opens Razorpay WebView | | | Test mode keys on local API |
-| Dismiss WebView returns to checkout (no false success) | | | |
-| Success screen **only** after `POST /payments/verify` returns paid | | | |
-| Idempotent re-checkout does not duplicate order | | | |
+| Test | Pass/Fail | Notes |
+| --- | --- | --- |
+| Address CRUD | | |
+| Checkout totals from server | | |
+| Razorpay WebView opens | | |
+| Dismiss WebView — no false success | | |
+| Success only after `/payments/verify` paid | | |
 
 ### Orders
 
-| Test | Android | iOS | Notes |
-| --- | --- | --- | --- |
-| Orders list | | | Requires Bearer-capable API |
-| Order detail | | | |
-| Cancel pending unpaid order | | | |
-
-### Deep links & IDs
-
-| Test | Android | iOS | Notes |
-| --- | --- | --- | --- |
-| App scheme `melkoraa://` registered | | | |
-| Auth callback deep link routes correctly | | | |
-| Bundle ID / package `in.melkoraa.app` in build settings | | | EAS profile |
-
----
-
-## Recommended test matrix
-
-| Goal | `EXPO_PUBLIC_API_URL` | API branch |
+| Test | Pass/Fail | Notes |
 | --- | --- | --- |
-| Catalog UX on real device | `https://www.melkoraa.in/api/v1` | prod (`main`) |
-| Full commerce flow | `http://<LAN-IP>:4317/api/v1` | local `melkoraa_mobile` |
-| Store candidate build | `https://www.melkoraa.in/api/v1` | prod after Bearer deploy |
+| Orders list / detail | | |
+| Cancel pending order | | |
 
 ---
 
-## Known gaps (see `MOBILE_API_GAPS.md`)
+## D. iOS physical device (manual — fill Pass/Fail/Notes)
 
-- Production Bearer auth pending `main` merge/deploy of `7467fb4`
-- Razorpay WebView only (no native SDK)
-- No offline catalog cache
-- Supabase dashboard must allow `melkoraa://auth/callback`
+Same env and API URL as Android section C. **Not tested by agent.**
+
+| Area | Pass/Fail | Notes |
+| --- | --- | --- |
+| Environment & network (mirror section C) | | |
+| Auth | | |
+| Catalog | | |
+| Cart & wishlist | | |
+| Addresses & checkout / Razorpay | | |
+| Orders | | |
+
+---
+
+## Known gaps
+
+See `MOBILE_API_GAPS.md` — production Bearer deploy, Razorpay WebView only, Supabase `melkoraa://` allow-list.

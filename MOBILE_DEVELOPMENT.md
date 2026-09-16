@@ -84,9 +84,11 @@ npm test
 npm run export
 ```
 
-## Device & API integration testing (Phase 6)
+## Physical device QA (Phase 7)
 
-See **`melkoraa-mobile/MOBILE_DEVICE_TEST_CHECKLIST.md`** for the full Pass/Fail matrix.
+See **`melkoraa-mobile/PHYSICAL_DEVICE_QA.md`** for LAN setup, `.env.local`, and phone connectivity.
+
+See **`melkoraa-mobile/MOBILE_DEVICE_TEST_CHECKLIST.md`** for the Pass/Fail matrix (automated vs local API vs Android vs iOS).
 
 | Scenario | API URL | Notes |
 | --- | --- | --- |
