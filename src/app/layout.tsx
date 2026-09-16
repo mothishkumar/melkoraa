@@ -23,13 +23,21 @@ const mono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
   title: {
     default: `${brand.name} — ${brand.tagline.replace(/\.$/, "")}`,
     template: `%s — ${brand.name}`,
   },
   description: `${brand.tagline} ${brand.drop.label}. ${brand.drop.message}`,
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    url: siteUrl,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
