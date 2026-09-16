@@ -15,12 +15,15 @@ export function createExpressSupabaseClient(req: Request, res: Response) {
         }));
       },
       setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
+        const crossOriginApi = process.env.NODE_ENV === "production";
         cookiesToSet.forEach(({ name, value, options }) => {
           res.cookie(name, value, {
             ...options,
             httpOnly: options.httpOnly ?? true,
-            sameSite: (options.sameSite as "lax" | "strict" | "none" | undefined) ?? "lax",
-            secure: options.secure ?? process.env.NODE_ENV === "production",
+            // Cross-origin Vite SPAs (customer + admin) call this API with credentials.
+            // Supabase defaults to Lax; override for production API + separate SPA origins.
+            sameSite: crossOriginApi ? "none" : ((options.sameSite as "lax" | "strict" | "none" | undefined) ?? "lax"),
+            secure: crossOriginApi ? true : (options.secure ?? false),
           });
         });
       },
