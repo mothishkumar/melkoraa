@@ -27,6 +27,7 @@ import {
 } from "@/db/schema";
 import { escapeIlike, newProductCutoff } from "@/lib/catalog/rules";
 import type { ProductSort } from "@/lib/validation/catalog";
+import { loadPagedRows } from "@/db/paginate";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export type PublicProductFilters = {
@@ -133,26 +134,25 @@ export async function listPublicProducts(filters: PublicProductFilters, db?: Cat
   const offset = (filters.page - 1) * filters.pageSize;
   const order = sortExpression(filters.sort);
 
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        id: products.id,
-        name: products.name,
-        slug: products.slug,
-        shortDescription: products.shortDescription,
-        basePrice: products.basePrice,
-        compareAtPrice: products.compareAtPrice,
-        createdAt: products.createdAt,
-      })
-      .from(products)
-      .where(where)
-      .orderBy(...order)
-      .limit(filters.pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(products).where(where),
-  ]);
-
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: products.id,
+          name: products.name,
+          slug: products.slug,
+          shortDescription: products.shortDescription,
+          basePrice: products.basePrice,
+          compareAtPrice: products.compareAtPrice,
+          createdAt: products.createdAt,
+        })
+        .from(products)
+        .where(where)
+        .orderBy(...order)
+        .limit(filters.pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(products).where(where),
+  );
 }
 
 export async function listAdminProducts(filters: AdminProductFilters, db?: CatalogDb) {
@@ -165,27 +165,26 @@ export async function listAdminProducts(filters: AdminProductFilters, db?: Catal
   const offset = (filters.page - 1) * filters.pageSize;
   const order = sortExpression(filters.sort);
 
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        id: products.id,
-        name: products.name,
-        slug: products.slug,
-        status: products.status,
-        basePrice: products.basePrice,
-        brand: products.brand,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-      })
-      .from(products)
-      .where(where)
-      .orderBy(...order)
-      .limit(filters.pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(products).where(where),
-  ]);
-
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: products.id,
+          name: products.name,
+          slug: products.slug,
+          status: products.status,
+          basePrice: products.basePrice,
+          brand: products.brand,
+          createdAt: products.createdAt,
+          updatedAt: products.updatedAt,
+        })
+        .from(products)
+        .where(where)
+        .orderBy(...order)
+        .limit(filters.pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(products).where(where),
+  );
 }
 
 export async function findProductBySlug(slug: string, db?: CatalogDb) {

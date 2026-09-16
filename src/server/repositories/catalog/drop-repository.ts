@@ -1,43 +1,44 @@
 import { and, asc, count, desc, eq } from "drizzle-orm";
 
 import { dropProducts, drops, products } from "@/db/schema";
+import { loadPagedRows } from "@/db/paginate";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export async function listPublicDrops(page: number, pageSize: number, db?: CatalogDb) {
   const client = catalogDb(db);
   const offset = (page - 1) * pageSize;
   const where = eq(drops.status, "active");
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        id: drops.id,
-        name: drops.name,
-        slug: drops.slug,
-        description: drops.description,
-        status: drops.status,
-        startAt: drops.startAt,
-        endAt: drops.endAt,
-        isLimited: drops.isLimited,
-        isNeverRestocked: drops.isNeverRestocked,
-      })
-      .from(drops)
-      .where(where)
-      .orderBy(desc(drops.createdAt))
-      .limit(pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(drops).where(where),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: drops.id,
+          name: drops.name,
+          slug: drops.slug,
+          description: drops.description,
+          status: drops.status,
+          startAt: drops.startAt,
+          endAt: drops.endAt,
+          isLimited: drops.isLimited,
+          isNeverRestocked: drops.isNeverRestocked,
+        })
+        .from(drops)
+        .where(where)
+        .orderBy(desc(drops.createdAt))
+        .limit(pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(drops).where(where),
+  );
 }
 
 export async function listAdminDrops(page: number, pageSize: number, db?: CatalogDb) {
   const client = catalogDb(db);
   const offset = (page - 1) * pageSize;
-  const [rows, totals] = await Promise.all([
-    client.select().from(drops).orderBy(desc(drops.createdAt)).limit(pageSize).offset(offset),
-    client.select({ value: count() }).from(drops),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client.select().from(drops).orderBy(desc(drops.createdAt)).limit(pageSize).offset(offset),
+    () => client.select({ value: count() }).from(drops),
+  );
 }
 
 export async function findDropBySlug(slug: string, db?: CatalogDb) {

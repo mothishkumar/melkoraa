@@ -34,6 +34,8 @@ describe("connection pool", () => {
     expect(runtimePostgresOptions.max).toBe(1);
     expect(runtimePostgresOptions.prepare).toBe(false);
     expect(runtimePostgresOptions.ssl).toBe("require");
+    expect(runtimePostgresOptions.keep_alive).toBe(30);
+    expect(runtimePostgresOptions.max_lifetime).toBe(60 * 10);
   });
 
   it("uses a conservative production default and caps the ceiling", () => {

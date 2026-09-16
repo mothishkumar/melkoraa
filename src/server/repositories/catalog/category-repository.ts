@@ -1,6 +1,7 @@
 import { asc, count, eq, inArray } from "drizzle-orm";
 
 import { categories, productCategories } from "@/db/schema";
+import { loadPagedRows } from "@/db/paginate";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export async function listCategories(
@@ -10,21 +11,21 @@ export async function listCategories(
 ) {
   const client = catalogDb(db);
   const offset = (page - 1) * pageSize;
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        id: categories.id,
-        name: categories.name,
-        slug: categories.slug,
-        description: categories.description,
-      })
-      .from(categories)
-      .orderBy(asc(categories.name))
-      .limit(pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(categories),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          description: categories.description,
+        })
+        .from(categories)
+        .orderBy(asc(categories.name))
+        .limit(pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(categories),
+  );
 }
 
 export async function findCategoryById(id: string, db?: CatalogDb) {

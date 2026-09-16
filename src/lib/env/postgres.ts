@@ -25,8 +25,9 @@ export type SafePostgresTarget = {
 /**
  * Runtime postgres.js pool size for DATABASE_URL (Supabase transaction pooler).
  * Tests stay at 1 so existing integration clients remain conservative.
- * Production default is 4 per Node isolate — enough for concurrent catalog
- * requests on a long-lived instance, small enough for Vercel+pooler.
+ * Production default is 4 per Node isolate. Concurrent Promise.all queries
+ * against the transaction pooler are avoided in repositories; TCP keepalive
+ * and max_lifetime recycle sockets before PgBouncer drops them (ECONNRESET).
  */
 export function resolvePostgresPoolMax(
   raw = process.env.POSTGRES_POOL_MAX,
@@ -47,8 +48,10 @@ export const runtimePostgresOptions = {
   prepare: false,
   ssl: "require" as const,
   max: resolvePostgresPoolMax(),
-  idle_timeout: 20,
+  idle_timeout: 10,
   connect_timeout: 10,
+  max_lifetime: 60 * 10,
+  keep_alive: 30,
 };
 
 export function isPostgresConnectionString(value: string): boolean {

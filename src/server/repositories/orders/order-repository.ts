@@ -1,6 +1,7 @@
 import { and, count, desc, eq, ilike, inArray, type SQL } from "drizzle-orm";
 
 import { addresses, orderItems, orderStatusHistory, orders } from "@/db/schema";
+import { loadPagedRows } from "@/db/paginate";
 import { orderDb, type OrderDb } from "@/server/repositories/orders/db";
 import type { AddressSnapshot } from "@/types/orders";
 
@@ -127,17 +128,17 @@ export async function listOrdersForUser(
 ) {
   const client = orderDb(db);
   const offset = (page - 1) * pageSize;
-  const [rows, totals] = await Promise.all([
-    client
-      .select()
-      .from(orders)
-      .where(eq(orders.userId, userId))
-      .orderBy(desc(orders.createdAt), desc(orders.id))
-      .limit(pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(orders).where(eq(orders.userId, userId)),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select()
+        .from(orders)
+        .where(eq(orders.userId, userId))
+        .orderBy(desc(orders.createdAt), desc(orders.id))
+        .limit(pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(orders).where(eq(orders.userId, userId)),
+  );
 }
 
 export async function listOrderStatusHistory(orderId: string, db?: OrderDb) {
@@ -209,15 +210,15 @@ export async function listOrdersAdmin(
     conditions.push(ilike(orders.orderNumber, `%${filters.search}%`));
   }
   const where = conditions.length ? and(...conditions) : undefined;
-  const [rows, totals] = await Promise.all([
-    client
-      .select()
-      .from(orders)
-      .where(where)
-      .orderBy(desc(orders.createdAt), desc(orders.id))
-      .limit(filters.pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(orders).where(where),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select()
+        .from(orders)
+        .where(where)
+        .orderBy(desc(orders.createdAt), desc(orders.id))
+        .limit(filters.pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(orders).where(where),
+  );
 }

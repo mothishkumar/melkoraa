@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm";
 
 import { inventory, inventoryTransactions, products, productVariants } from "@/db/schema";
+import { loadPagedRows } from "@/db/paginate";
 import { escapeIlike } from "@/lib/catalog/rules";
 import type { InventorySort } from "@/lib/validation/inventory";
 import { inventoryDb, type InventoryDb } from "@/server/repositories/inventory/db";
@@ -112,39 +113,39 @@ export async function listInventory(filters: InventoryListFilters, db?: Inventor
   const offset = (filters.page - 1) * filters.pageSize;
   const order = sortExpressions(filters.sort);
 
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        id: inventory.id,
-        variantId: inventory.variantId,
-        quantityOnHand: inventory.quantityOnHand,
-        quantityReserved: inventory.quantityReserved,
-        quantitySold: inventory.quantitySold,
-        reorderLevel: inventory.reorderLevel,
-        updatedAt: inventory.updatedAt,
-        sku: productVariants.sku,
-        size: productVariants.size,
-        color: productVariants.color,
-        productId: productVariants.productId,
-        productName: products.name,
-        productSlug: products.slug,
-      })
-      .from(inventory)
-      .innerJoin(productVariants, eq(productVariants.id, inventory.variantId))
-      .innerJoin(products, eq(products.id, productVariants.productId))
-      .where(where)
-      .orderBy(...order)
-      .limit(filters.pageSize)
-      .offset(offset),
-    client
-      .select({ value: count() })
-      .from(inventory)
-      .innerJoin(productVariants, eq(productVariants.id, inventory.variantId))
-      .innerJoin(products, eq(products.id, productVariants.productId))
-      .where(where),
-  ]);
-
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: inventory.id,
+          variantId: inventory.variantId,
+          quantityOnHand: inventory.quantityOnHand,
+          quantityReserved: inventory.quantityReserved,
+          quantitySold: inventory.quantitySold,
+          reorderLevel: inventory.reorderLevel,
+          updatedAt: inventory.updatedAt,
+          sku: productVariants.sku,
+          size: productVariants.size,
+          color: productVariants.color,
+          productId: productVariants.productId,
+          productName: products.name,
+          productSlug: products.slug,
+        })
+        .from(inventory)
+        .innerJoin(productVariants, eq(productVariants.id, inventory.variantId))
+        .innerJoin(products, eq(products.id, productVariants.productId))
+        .where(where)
+        .orderBy(...order)
+        .limit(filters.pageSize)
+        .offset(offset),
+    () =>
+      client
+        .select({ value: count() })
+        .from(inventory)
+        .innerJoin(productVariants, eq(productVariants.id, inventory.variantId))
+        .innerJoin(products, eq(products.id, productVariants.productId))
+        .where(where),
+  );
 }
 
 export async function insertInventory(

@@ -1,6 +1,7 @@
 import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 
 import { profiles } from "@/db/schema";
+import { loadPagedRows } from "@/db/paginate";
 import { orderDb, type OrderDb } from "@/server/repositories/orders/db";
 import { escapeIlike } from "@/lib/catalog/rules";
 
@@ -21,21 +22,21 @@ export async function listCustomerProfiles(
     if (search) conditions.push(search);
   }
   const where = and(...conditions);
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        userId: profiles.userId,
-        firstName: profiles.firstName,
-        lastName: profiles.lastName,
-        phone: profiles.phone,
-        createdAt: profiles.createdAt,
-      })
-      .from(profiles)
-      .where(where)
-      .orderBy(desc(profiles.createdAt))
-      .limit(filters.pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(profiles).where(where),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          userId: profiles.userId,
+          firstName: profiles.firstName,
+          lastName: profiles.lastName,
+          phone: profiles.phone,
+          createdAt: profiles.createdAt,
+        })
+        .from(profiles)
+        .where(where)
+        .orderBy(desc(profiles.createdAt))
+        .limit(filters.pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(profiles).where(where),
+  );
 }

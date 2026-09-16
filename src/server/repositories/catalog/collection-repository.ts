@@ -1,45 +1,46 @@
 import { count, desc, eq } from "drizzle-orm";
 
 import { collections } from "@/db/schema";
+import { loadPagedRows } from "@/db/paginate";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export async function listPublicCollections(page: number, pageSize: number, db?: CatalogDb) {
   const client = catalogDb(db);
   const offset = (page - 1) * pageSize;
   const where = eq(collections.status, "active");
-  const [rows, totals] = await Promise.all([
-    client
-      .select({
-        id: collections.id,
-        name: collections.name,
-        slug: collections.slug,
-        description: collections.description,
-        status: collections.status,
-        heroImageUrl: collections.heroImageUrl,
-      })
-      .from(collections)
-      .where(where)
-      .orderBy(desc(collections.createdAt))
-      .limit(pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(collections).where(where),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: collections.id,
+          name: collections.name,
+          slug: collections.slug,
+          description: collections.description,
+          status: collections.status,
+          heroImageUrl: collections.heroImageUrl,
+        })
+        .from(collections)
+        .where(where)
+        .orderBy(desc(collections.createdAt))
+        .limit(pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(collections).where(where),
+  );
 }
 
 export async function listAdminCollections(page: number, pageSize: number, db?: CatalogDb) {
   const client = catalogDb(db);
   const offset = (page - 1) * pageSize;
-  const [rows, totals] = await Promise.all([
-    client
-      .select()
-      .from(collections)
-      .orderBy(desc(collections.createdAt))
-      .limit(pageSize)
-      .offset(offset),
-    client.select({ value: count() }).from(collections),
-  ]);
-  return { rows, total: Number(totals[0]?.value ?? 0) };
+  return loadPagedRows(
+    () =>
+      client
+        .select()
+        .from(collections)
+        .orderBy(desc(collections.createdAt))
+        .limit(pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(collections),
+  );
 }
 
 export async function findCollectionById(id: string, db?: CatalogDb) {
