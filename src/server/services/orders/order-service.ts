@@ -21,9 +21,15 @@ async function loadDetail(orderId: string): Promise<OrderDetailDto> {
 
 export async function listCustomerOrders(userId: string, page: number, pageSize: number) {
   const { rows, total } = await orderRepo.listOrdersForUser(userId, page, pageSize);
-  const itemsByOrder = await Promise.all(rows.map((row) => orderRepo.listOrderItems(row.id)));
+  const items = await orderRepo.listOrderItemsForOrders(rows.map((row) => row.id));
+  const itemsByOrder = new Map<string, typeof items>();
+  for (const item of items) {
+    const list = itemsByOrder.get(item.orderId) ?? [];
+    list.push(item);
+    itemsByOrder.set(item.orderId, list);
+  }
   return {
-    data: rows.map((row, index) => mapOrderSummary(row, itemsByOrder[index] ?? [])),
+    data: rows.map((row) => mapOrderSummary(row, itemsByOrder.get(row.id) ?? [])),
     pagination: paginationMeta(page, pageSize, total),
   };
 }
@@ -50,10 +56,16 @@ export async function listAdminOrders(
     pageSize,
     ...filters,
   });
-  const itemsByOrder = await Promise.all(rows.map((row) => orderRepo.listOrderItems(row.id)));
+  const items = await orderRepo.listOrderItemsForOrders(rows.map((row) => row.id));
+  const itemsByOrder = new Map<string, typeof items>();
+  for (const item of items) {
+    const list = itemsByOrder.get(item.orderId) ?? [];
+    list.push(item);
+    itemsByOrder.set(item.orderId, list);
+  }
   return {
-    data: rows.map((row, index) => ({
-      ...mapOrderSummary(row, itemsByOrder[index] ?? []),
+    data: rows.map((row) => ({
+      ...mapOrderSummary(row, itemsByOrder.get(row.id) ?? []),
       userId: row.userId,
     })),
     pagination: paginationMeta(page, pageSize, total),

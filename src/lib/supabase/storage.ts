@@ -11,6 +11,8 @@ export const IMAGE_UPLOAD_CONSTRAINTS = {
   allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"] as const,
 } as const;
 
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
+
 export function isAllowedImageMimeType(mimeType: string): boolean {
   return IMAGE_UPLOAD_CONSTRAINTS.allowedMimeTypes.includes(
     mimeType as (typeof IMAGE_UPLOAD_CONSTRAINTS.allowedMimeTypes)[number],
@@ -18,8 +20,13 @@ export function isAllowedImageMimeType(mimeType: string): boolean {
 }
 
 export function createSafeStorageFileName(originalName: string): string {
-  const extension = originalName.split(".").pop()?.toLowerCase() ?? "bin";
-  const safeExtension = extension.replace(/[^a-z0-9]/g, "") || "bin";
+  const raw = originalName.replace(/\\/g, "/").split("/").pop() ?? "upload";
+  const extension = raw.split(".").pop()?.toLowerCase() ?? "";
+  const safeExtension = ALLOWED_EXTENSIONS.has(extension)
+    ? extension === "jpeg"
+      ? "jpg"
+      : extension
+    : "bin";
   const unique = crypto.randomUUID();
   return `${unique}.${safeExtension}`;
 }

@@ -24,9 +24,13 @@ export async function getAdminDashboard(): Promise<AdminDashboardSnapshot> {
       inventoryRepo.listRecentLedger(12),
     ]);
 
-  const itemsByOrder = await Promise.all(
-    recentOrders.rows.map((row) => orderRepo.listOrderItems(row.id)),
-  );
+  const items = await orderRepo.listOrderItemsForOrders(recentOrders.rows.map((row) => row.id));
+  const itemsByOrder = new Map<string, typeof items>();
+  for (const item of items) {
+    const list = itemsByOrder.get(item.orderId) ?? [];
+    list.push(item);
+    itemsByOrder.set(item.orderId, list);
+  }
 
   const productMap = Object.fromEntries(
     productRows.map((row) => [row.status, Number(row.value)]),
@@ -51,8 +55,8 @@ export async function getAdminDashboard(): Promise<AdminDashboardSnapshot> {
       cancelled: countFor(orderStatus, "cancelled"),
       paid: countFor(paymentStatus, "paid", "paymentStatus"),
     },
-    recentOrders: recentOrders.rows.map((row, index) => ({
-      ...mapOrderSummary(row, itemsByOrder[index] ?? []),
+    recentOrders: recentOrders.rows.map((row) => ({
+      ...mapOrderSummary(row, itemsByOrder.get(row.id) ?? []),
       userId: row.userId,
     })),
     recentInventory: ledger.map(mapLedger),

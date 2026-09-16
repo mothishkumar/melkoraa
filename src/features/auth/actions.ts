@@ -3,7 +3,7 @@
 import "server-only";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AUTH_MESSAGES, fieldErrorsFromZod, mapAuthError } from "@/lib/auth/errors";
@@ -21,6 +21,7 @@ import {
 } from "@/lib/auth/schemas";
 import { getSiteUrl } from "@/lib/auth/site-url";
 import { isPublicSupabaseConfigured } from "@/lib/env/public";
+import { consumeRateLimit } from "@/lib/http/rate-limit";
 import { logger } from "@/lib/logger";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -45,6 +46,21 @@ function resolveLoginDestination(
   return resolvePostLoginPath(role, next, getSafeRedirectPath, AUTH_ROUTES.unauthorized);
 }
 
+async function authThrottle(
+  bucket: string,
+  identity: string,
+  limit: number,
+  windowMs: number,
+): Promise<AuthActionResult | null> {
+  const hdrs = await headers();
+  const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || hdrs.get("x-real-ip") || "local";
+  const result = consumeRateLimit(`${bucket}:${ip}:${identity.toLowerCase()}`, limit, windowMs);
+  if (!result.ok) {
+    return { ok: false, message: AUTH_MESSAGES.rateLimited };
+  }
+  return null;
+}
+
 export async function registerAction(input: {
   fullName: string;
   email: string;
@@ -64,6 +80,8 @@ export async function registerAction(input: {
   }
 
   const { fullName, email, password } = parsed.data;
+  const throttled = await authThrottle("auth.register", email, 5, 15 * 60_000);
+  if (throttled) return throttled;
   const { firstName, lastName } = splitFullName(fullName);
   const supabase = await createServerSupabaseClient();
   const siteUrl = getSiteUrl();
@@ -120,6 +138,9 @@ export async function loginAction(input: {
     };
   }
 
+  const throttled = await authThrottle("auth.login", parsed.data.email, 8, 60_000);
+  if (throttled) return throttled;
+
   const supabase = await createServerSupabaseClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
@@ -162,6 +183,9 @@ export async function forgotPasswordAction(input: {
       fieldErrors: fieldErrorsFromZod(parsed.error),
     };
   }
+
+  const throttled = await authThrottle("auth.forgot", parsed.data.email, 5, 15 * 60_000);
+  if (throttled) return throttled;
 
   const supabase = await createServerSupabaseClient();
   const siteUrl = getSiteUrl();

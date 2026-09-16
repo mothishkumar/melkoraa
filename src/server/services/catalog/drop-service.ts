@@ -2,6 +2,7 @@ import { paginationMeta } from "@/server/http";
 import { conflictError, notFoundError } from "@/server/errors";
 import { isUniqueViolation, uniqueConstraintMessage } from "@/server/api";
 import { logger } from "@/lib/logger";
+import { recordOperationalAudit } from "@/server/audit";
 import { formatMoney } from "@/lib/catalog/money";
 import { isNewProduct } from "@/lib/catalog/rules";
 import { mapDrop } from "@/server/services/catalog/mappers";
@@ -102,6 +103,12 @@ export async function createDrop(
       isNeverRestocked: input.isNeverRestocked ?? true,
     });
     logger.info("catalog.drop_created", { actorId, resourceId: row?.id });
+    void recordOperationalAudit({
+      actorId,
+      action: "drop.created",
+      entityType: "drop",
+      entityId: row?.id ?? null,
+    });
     return row ? mapDrop(row) : row;
   } catch (error) {
     wrapUnique(error);
@@ -139,6 +146,12 @@ export async function updateDrop(
   try {
     const row = await dropRepo.updateDropById(id, fields);
     logger.info("catalog.drop_updated", { actorId, resourceId: id });
+    void recordOperationalAudit({
+      actorId,
+      action: "drop.updated",
+      entityType: "drop",
+      entityId: id,
+    });
     return row ? mapDrop(row) : row;
   } catch (error) {
     wrapUnique(error);
@@ -152,6 +165,12 @@ export async function archiveDrop(id: string, actorId: string) {
   }
   const row = await dropRepo.updateDropById(id, { status: "archived" });
   logger.info("catalog.drop_archived", { actorId, resourceId: id });
+  void recordOperationalAudit({
+    actorId,
+    action: "drop.archived",
+    entityType: "drop",
+    entityId: id,
+  });
   return row ? mapDrop(row) : row;
 }
 

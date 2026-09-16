@@ -1,7 +1,11 @@
+import { redactSecrets } from "@/lib/env/postgres";
+
 type LogLevel = "info" | "warn" | "error";
 
 const REDACT_KEYS = new Set(
   [
+    "database_url",
+    "direct_database_url",
     "password",
     "token",
     "access_token",
@@ -36,6 +40,10 @@ function sanitize(value: unknown, key?: string): unknown {
         sanitize(entryValue, entryKey),
       ]),
     );
+  }
+
+  if (typeof value === "string") {
+    return redactSecrets(value);
   }
 
   return value;

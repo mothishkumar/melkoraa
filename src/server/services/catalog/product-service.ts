@@ -10,6 +10,7 @@ import {
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getPublicEnv } from "@/lib/env/public";
 import { logger } from "@/lib/logger";
+import { recordOperationalAudit } from "@/server/audit";
 import type { PublicProductQuery } from "@/lib/validation/catalog";
 import type { CreateProductInput, UpdateProductInput } from "@/server/services/catalog/types";
 import { AppError, conflictError, notFoundError, validationError } from "@/server/errors";
@@ -271,6 +272,12 @@ export async function createProduct(input: CreateProductInput, actorId: string) 
       return created;
     });
     logger.info("catalog.product_created", { actorId, resourceId: product.id });
+    void recordOperationalAudit({
+      actorId,
+      action: "product.created",
+      entityType: "product",
+      entityId: product.id,
+    });
     return getAdminProduct(product.id);
   } catch (error) {
     wrapUnique(error, "A product with this slug already exists.");
@@ -298,6 +305,12 @@ export async function updateProduct(id: string, input: UpdateProductInput, actor
       }
     });
     logger.info("catalog.product_updated", { actorId, resourceId: id });
+    void recordOperationalAudit({
+      actorId,
+      action: "product.updated",
+      entityType: "product",
+      entityId: id,
+    });
     return getAdminProduct(id);
   } catch (error) {
     wrapUnique(error, "A product with this slug already exists.");
@@ -311,6 +324,12 @@ export async function archiveProduct(id: string, actorId: string) {
   }
   await productsRepo.archiveProductById(id);
   logger.info("catalog.product_archived", { actorId, resourceId: id });
+  void recordOperationalAudit({
+    actorId,
+    action: "product.archived",
+    entityType: "product",
+    entityId: id,
+  });
   return getAdminProduct(id);
 }
 
