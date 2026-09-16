@@ -2,20 +2,14 @@
 
 Backend is **read-only** from the mobile branch. The app consumes `https://www.melkoraa.in/api/v1` and Supabase Auth.
 
-## Critical: authenticated REST APIs use cookie sessions only
+## Authenticated REST APIs (cookie or Bearer)
 
-**Gap:** Protected `/api/v1/*` routes authenticate via Supabase **HTTP cookies** on the Next.js server. There is **no** `Authorization: Bearer` validation in `getCurrentUser()` today.
+**Status:** Resolved on `melkoraa_mobile`. Protected `/api/v1/*` routes accept **either** Supabase HTTP cookies (web) **or** `Authorization: Bearer <access_token>` (mobile). `getCurrentUser()` / `requireApiAuth()` resolve the same Supabase user identity from both mechanisms.
 
-**Impact:** Mobile sends `Authorization: Bearer <access_token>` and implements refresh-on-401 + single retry, but cart, wishlist, checkout, addresses, orders, and `GET /auth/me` still return **401 UNAUTHENTICATED** until the backend accepts Bearer JWTs.
-
-**Phase 3/4 app behavior:**
-- Auth UI + Supabase session restore work client-side.
-- Protected screens use `AuthGate` and show sign-in when unsigned in.
-- Cart, wishlist, checkout, addresses, and orders call real APIs — no fake data.
-- On 401 after refresh retry, session is cleared and user is sent to sign-in.
-- Pending add-to-bag / wishlist actions are stored locally and replayed after login.
-
-**Required backend change:** Accept `Authorization: Bearer` in API guard alongside cookies.
+**Mobile behavior:**
+- Sends `Authorization: Bearer <access_token>` on protected API calls.
+- Refresh-on-401 + single retry; invalid/expired tokens return **401 UNAUTHENTICATED**.
+- Cart, wishlist, checkout, addresses, orders, and `GET /auth/me` use the authenticated user from the JWT — never a body `userId`.
 
 ## Auth deep links (password reset / email verify)
 

@@ -1,10 +1,10 @@
 import "server-only";
 
+import { resolveRequestAuth } from "@/lib/auth/request-auth";
 import { createServiceRoleClient } from "@/lib/supabase/admin";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createUserScopedSupabaseClient } from "@/lib/supabase/user-scoped";
 import { isPublicSupabaseConfigured } from "@/lib/env/public";
 import { isServerEnvConfigured } from "@/lib/env/server";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { splitFullName } from "@/lib/auth/names";
 import { isUserRole, type Profile } from "@/lib/auth/types";
 import { logger } from "@/lib/logger";
@@ -60,8 +60,9 @@ function namesFromMetadata(user: {
 
 async function fetchProfile(
   userId: string,
+  accessToken: string | null,
 ): Promise<Profile | null> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createUserScopedSupabaseClient(accessToken);
   const { data, error } = await supabase
     .from("profiles")
     .select(
@@ -81,9 +82,13 @@ async function fetchProfile(
  * Server-only recovery if auth.users exists but the signup trigger missed.
  * Never call this from the browser. Does not change an existing role.
  */
-async function repairMissingProfile(userId: string, user: {
-  user_metadata?: Record<string, unknown>;
-}): Promise<Profile | null> {
+async function repairMissingProfile(
+  userId: string,
+  user: {
+    user_metadata?: Record<string, unknown>;
+  },
+  accessToken: string | null,
+): Promise<Profile | null> {
   if (!isServerEnvConfigured()) {
     logger.warn("auth.profile_repair_skipped");
     return null;
@@ -108,12 +113,16 @@ async function repairMissingProfile(userId: string, user: {
     return null;
   }
 
-  return fetchProfile(userId);
+  return fetchProfile(userId, accessToken);
 }
 
-async function syncProfileNames(profile: Profile, user: {
-  user_metadata?: Record<string, unknown>;
-}): Promise<Profile> {
+async function syncProfileNames(
+  profile: Profile,
+  user: {
+    user_metadata?: Record<string, unknown>;
+  },
+  accessToken: string | null,
+): Promise<Profile> {
   if (profile.firstName) {
     return profile;
   }
@@ -123,7 +132,7 @@ async function syncProfileNames(profile: Profile, user: {
     return profile;
   }
 
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createUserScopedSupabaseClient(accessToken);
   const { data, error } = await supabase
     .from("profiles")
     .update({
@@ -148,19 +157,23 @@ export async function getCurrentProfile(): Promise<Profile | null> {
     return null;
   }
 
-  const user = await getCurrentUser();
-  if (!user) {
+  const auth = await resolveRequestAuth();
+  if (!auth.user) {
     return null;
   }
 
-  let profile = await fetchProfile(user.id);
+  let profile = await fetchProfile(auth.user.id, auth.accessToken);
   if (!profile) {
-    profile = await repairMissingProfile(user.id, user);
+    profile = await repairMissingProfile(
+      auth.user.id,
+      auth.user,
+      auth.accessToken,
+    );
   }
 
   if (!profile) {
     return null;
   }
 
-  return syncProfileNames(profile, user);
+  return syncProfileNames(profile, auth.user, auth.accessToken);
 }
