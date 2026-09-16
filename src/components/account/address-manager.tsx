@@ -31,7 +31,7 @@ export function AddressManager({ addresses }: { addresses: AddressDto[] }) {
           <p className="text-sm text-stone">No addresses saved.</p>
         ) : null}
         {addresses.map((address) => (
-          <li key={address.id} className="border border-white/15 p-5 text-sm leading-6">
+          <li key={address.id} className="border border-black/15 bg-white p-5 text-sm leading-6">
             {address.isDefault ? <p className="label-caps mb-2">Default</p> : null}
             <p>{address.name}</p>
             <p className="text-stone">

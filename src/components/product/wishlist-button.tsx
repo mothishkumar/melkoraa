@@ -30,7 +30,7 @@ export function WishlistButton({
         aria-pressed={on}
         aria-label={on ? "Remove from wishlist" : "Save to wishlist"}
         className={cn(
-          "inline-flex size-10 items-center justify-center border border-white/20 text-off-white transition-colors hover:border-off-white disabled:opacity-50",
+          "inline-flex size-10 items-center justify-center bg-white/90 text-black shadow-sm transition-colors hover:bg-white disabled:opacity-50",
         )}
         onClick={async (event) => {
           event.preventDefault();
@@ -52,7 +52,7 @@ export function WishlistButton({
           }
         }}
       >
-        <Heart className={cn("size-4", on ? "fill-off-white" : "")} />
+        <Heart className={cn("size-4", on ? "fill-black" : "")} />
       </button>
       {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
     </div>

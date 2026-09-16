@@ -93,7 +93,7 @@ export function CheckoutClient({
     return (
       <p className="text-sm text-stone">
         Your bag is empty.{" "}
-        <Link href="/products" className="text-off-white">
+        <Link href="/products" className="underline underline-offset-4">
           Continue shopping
         </Link>
       </p>
@@ -194,8 +194,8 @@ export function CheckoutClient({
             {addresses.map((address) => (
               <label
                 key={address.id}
-                className={`flex cursor-pointer gap-3 border p-4 ${
-                  addressId === address.id ? "border-off-white" : "border-white/15"
+                className={`flex cursor-pointer gap-3 border bg-white p-4 ${
+                  addressId === address.id ? "border-black" : "border-black/15"
                 }`}
               >
                 <input
@@ -274,7 +274,7 @@ export function CheckoutClient({
         </section>
       </div>
 
-      <aside className="lg:col-span-5">
+      <aside className="h-fit border border-black/10 bg-white p-6 lg:col-span-5">
         <h2 className="editorial-display text-2xl">Order summary</h2>
         <ul className="mt-6 space-y-4">
           {cart.items.map((item) => (
@@ -289,7 +289,7 @@ export function CheckoutClient({
             </li>
           ))}
         </ul>
-        <p className="mt-6 flex justify-between border-t border-white/10 pt-4 text-sm">
+        <p className="mt-6 flex justify-between border-t border-black/10 pt-4 text-sm">
           <span>Estimated subtotal</span>
           <span>{estimate}</span>
         </p>

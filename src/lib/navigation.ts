@@ -2,9 +2,10 @@ import type { UserRole } from "@/lib/auth/types";
 import { hasMinRole } from "@/lib/auth/permissions";
 
 export const storeNav = [
-  { href: "/drop-001", label: "DROP 001" },
   { href: "/products", label: "SHOP" },
+  { href: "/drop-001", label: "DROPS" },
   { href: "/about", label: "ABOUT" },
+  { href: "/journal", label: "JOURNAL" },
 ] as const;
 
 export const storeFooterNav = {

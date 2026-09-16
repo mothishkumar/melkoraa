@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AdminEmpty, AdminPageHeader } from "@/components/admin/page-header";
 import { AdminPagination } from "@/components/admin/pagination";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/admin/status-pill";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -74,7 +74,7 @@ export default async function AdminOrdersPage({
       {result.data.length === 0 ? (
         <AdminEmpty title="No orders" description="No orders match these filters." />
       ) : (
-        <div className="overflow-x-auto">
+        <div className="admin-panel overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -102,9 +102,11 @@ export default async function AdminOrdersPage({
                     {order.userId ?? "—"}
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{order.status}</Badge>
+                    <StatusPill value={order.status} />
                   </TableCell>
-                  <TableCell>{order.paymentStatus}</TableCell>
+                  <TableCell>
+                    <StatusPill value={order.paymentStatus} />
+                  </TableCell>
                   <TableCell>{order.itemCount}</TableCell>
                   <TableCell className="text-right tabular-nums">{formatInr(order.totalAmount)}</TableCell>
                 </TableRow>

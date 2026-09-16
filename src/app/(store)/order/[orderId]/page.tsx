@@ -25,19 +25,21 @@ export default async function OrderConfirmationPage({
   if (!order) notFound();
 
   return (
-    <div className="mx-auto max-w-[900px] px-4 py-16 md:px-8 md:py-24">
-      <p className="label-caps">{order.orderNumber}</p>
-      <h1 className="editorial-display mt-4 text-4xl md:text-6xl">
-        {paymentHeadline(order.paymentStatus, order.status)}
-      </h1>
-      <p className="mt-6 max-w-lg text-sm leading-7 text-stone">
-        {paymentSuccessCopy(order.paymentStatus)}
-      </p>
-      {!isVerifiedPaid(order.paymentStatus) && order.paymentStatus === "pending" ? (
-        <p className="mt-4 text-sm text-stone">PAYMENT PROCESSING</p>
-      ) : null}
-      <div className="mt-12 border-t border-white/10 pt-10">
-        <OrderDetailView order={order} />
+    <div className="store-light bg-[#f6f3ee] text-[#111]">
+      <div className="mx-auto max-w-[1100px] px-4 py-16 md:px-8 md:py-24">
+        <p className="label-caps text-center">{order.orderNumber}</p>
+        <h1 className="editorial-display mt-4 text-center text-4xl md:text-6xl">
+          {paymentHeadline(order.paymentStatus, order.status)}
+        </h1>
+        <p className="mx-auto mt-6 max-w-lg text-center text-sm leading-7 text-[#6f6b66]">
+          {paymentSuccessCopy(order.paymentStatus)}
+        </p>
+        {!isVerifiedPaid(order.paymentStatus) && order.paymentStatus === "pending" ? (
+          <p className="mt-4 text-center text-sm text-[#6f6b66]">PAYMENT PROCESSING</p>
+        ) : null}
+        <div className="mt-12 border-t border-black/10 pt-10">
+          <OrderDetailView order={order} />
+        </div>
       </div>
     </div>
   );

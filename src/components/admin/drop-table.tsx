@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { StatusPill } from "@/components/admin/status-pill";
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import { AdminNotice } from "@/components/admin/page-header";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -28,7 +28,7 @@ export function DropTable({ drops }: { drops: PublicDropSummary[] }) {
   return (
     <div className="space-y-3">
       <AdminNotice message={notice} tone="error" />
-      <div className="overflow-x-auto">
+      <div className="admin-panel overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -50,7 +50,7 @@ export function DropTable({ drops }: { drops: PublicDropSummary[] }) {
                 </TableCell>
                 <TableCell className="font-mono text-xs">{drop.slug}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{drop.status}</Badge>
+                  <StatusPill value={drop.status} />
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-xs">
                   {drop.startAt ? new Date(drop.startAt).toLocaleString("en-IN") : "—"}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { AdminPageHeader } from "@/components/admin/page-header";
-import { Badge } from "@/components/ui/badge";
+import { StatusPill } from "@/components/admin/status-pill";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -34,7 +34,7 @@ export default async function AdminDashboardPage() {
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card) => (
-          <Card key={card.label} className="rounded-none">
+          <Card key={card.label} className="rounded-2xl border-zinc-200 bg-white shadow-sm ring-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                 {card.label}
@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
           {snapshot.recentOrders.length === 0 ? (
             <p className="text-sm text-muted-foreground">No orders yet.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="admin-panel overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -73,9 +73,11 @@ export default async function AdminDashboardPage() {
                         </Link>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{order.status}</Badge>
+                        <StatusPill value={order.status} />
                       </TableCell>
-                      <TableCell>{order.paymentStatus}</TableCell>
+                      <TableCell>
+                        <StatusPill value={order.paymentStatus} />
+                      </TableCell>
                       <TableCell className="text-right tabular-nums">{formatInr(order.totalAmount)}</TableCell>
                     </TableRow>
                   ))}
@@ -89,7 +91,7 @@ export default async function AdminDashboardPage() {
           {snapshot.recentInventory.length === 0 ? (
             <p className="text-sm text-muted-foreground">No inventory activity yet.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="admin-panel overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

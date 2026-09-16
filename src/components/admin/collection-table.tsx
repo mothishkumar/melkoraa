@@ -3,10 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { StatusPill } from "@/components/admin/status-pill";
 import { CollectionForm } from "@/components/admin/collection-form";
 import { ConfirmAction } from "@/components/admin/confirm-action";
 import { AdminNotice } from "@/components/admin/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,7 +36,7 @@ export function CollectionTable({ collections }: { collections: PublicCollection
   return (
     <div className="space-y-3">
       <AdminNotice message={notice} tone="error" />
-      <div className="overflow-x-auto">
+      <div className="admin-panel overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -52,7 +52,7 @@ export function CollectionTable({ collections }: { collections: PublicCollection
                 <TableCell className="font-medium">{collection.name}</TableCell>
                 <TableCell className="font-mono text-xs">{collection.slug}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{collection.status}</Badge>
+                  <StatusPill value={collection.status} />
                 </TableCell>
                 <TableCell className="space-x-2 text-right whitespace-nowrap">
                   {canMutate ? (

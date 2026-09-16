@@ -37,10 +37,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
     return (
       <div className="py-20 text-center">
         <p className="editorial-display text-4xl">YOUR CART IS EMPTY.</p>
-        <Link
-          href="/products"
-          className="mt-8 inline-flex border border-off-white px-8 py-4 text-[0.7rem] tracking-[0.28em] uppercase"
-        >
+        <Link href="/products" className="mk-outline mt-8 border-black">
           Continue shopping
         </Link>
       </div>
@@ -51,7 +48,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
     <div className="grid gap-12 lg:grid-cols-12">
       <ul className="space-y-8 lg:col-span-8">
         {cart.items.map((item) => (
-          <li key={item.variantId} className="flex flex-col gap-4 border-b border-white/10 pb-8 sm:flex-row sm:justify-between">
+          <li key={item.variantId} className="flex flex-col gap-4 border-b border-black/10 pb-8 sm:flex-row sm:justify-between">
             <div>
               <Link href={`/products/${item.productSlug}`} className="text-sm uppercase tracking-[0.08em]">
                 {item.productName}
@@ -65,7 +62,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center border border-white/20">
+              <div className="flex items-center border border-black/15">
                 <button
                   type="button"
                   className="size-11"
@@ -121,7 +118,7 @@ export function CartEditor({ cart }: { cart: CartDto }) {
         {notice ? <p className="mt-4 text-sm text-destructive">{notice}</p> : null}
         <Link
           href="/checkout"
-          className="mt-8 flex h-12 items-center justify-center border border-off-white text-[0.7rem] tracking-[0.28em] uppercase hover:bg-off-white hover:text-black"
+          className="mt-8 flex h-12 items-center justify-center bg-[#111] text-[0.7rem] tracking-[0.28em] text-[#f6f3ee] uppercase hover:opacity-85"
         >
           Checkout
         </Link>

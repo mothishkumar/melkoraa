@@ -14,53 +14,52 @@ export function StoreHeader({
   isStaff?: boolean;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur-sm">
-      <div className="mx-auto grid h-16 max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 md:h-20 md:px-8">
-        <div className="flex min-w-0 items-center justify-start">
-          <div className="md:hidden">
-            <StoreMobileNav isAuthenticated={isAuthenticated} isStaff={isStaff} />
-          </div>
-          <nav className="hidden items-center gap-6 lg:gap-8 md:flex" aria-label="Primary">
-            {storeNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="label-caps shrink-0 text-[0.65rem] text-off-white/80 transition-colors hover:text-off-white"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/85 backdrop-blur-md">
+      <div className="mx-auto flex h-[4.25rem] max-w-[1600px] items-center justify-between gap-3 px-4 md:h-20 md:px-8">
         <Link
           href="/"
-          className="editorial-display shrink-0 px-2 text-center text-sm tracking-[0.28em] sm:text-base md:text-lg md:tracking-[0.35em]"
+          className="editorial-display shrink-0 text-[0.95rem] tracking-[0.42em] md:text-lg"
         >
           {brand.name}
         </Link>
 
-        <div className="flex min-w-0 items-center justify-end gap-3 sm:gap-5 md:gap-7">
+        <nav className="hidden items-center gap-9 md:flex" aria-label="Primary">
+          {storeNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="label-caps text-[0.62rem] text-off-white/80 transition-colors hover:text-off-white"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="flex min-w-0 items-center justify-end gap-4 md:gap-6">
           {isStaff ? (
             <Link
               href="/admin"
-              className="label-caps hidden text-[0.65rem] text-off-white/80 hover:text-off-white sm:inline"
+              className="label-caps hidden text-[0.62rem] text-off-white/80 hover:text-off-white sm:inline"
             >
               Admin
             </Link>
           ) : null}
           <Link
             href={isAuthenticated ? "/account" : "/login"}
-            className="label-caps shrink-0 text-[0.65rem] text-off-white/80 hover:text-off-white"
+            className="label-caps hidden text-[0.62rem] text-off-white/80 hover:text-off-white sm:inline"
+            aria-label={isAuthenticated ? "Account" : "Login"}
           >
             {isAuthenticated ? "Account" : "Login"}
           </Link>
           {isAuthenticated ? (
-            <span className="hidden sm:inline">
+            <span className="hidden lg:inline">
               <LogoutButton />
             </span>
           ) : null}
           <BagLink isAuthenticated={isAuthenticated} />
+          <div className="md:hidden">
+            <StoreMobileNav isAuthenticated={isAuthenticated} isStaff={isStaff} />
+          </div>
         </div>
       </div>
     </header>

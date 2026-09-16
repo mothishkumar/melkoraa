@@ -23,12 +23,12 @@ export function OrderDetailView({ order }: { order: OrderDetailDto }) {
           </li>
         ))}
       </ul>
-      <p className="flex justify-between border-t border-white/10 pt-4 text-sm">
+      <p className="flex justify-between border-t border-current/15 pt-4 text-sm">
         <span>Total</span>
         <span>{formatInr(order.totalAmount)}</span>
       </p>
-      <div className="text-sm leading-7 text-stone">
-        <p className="label-caps text-off-white">Ship to</p>
+      <div className="text-sm leading-7 text-[#6f6b66]">
+        <p className="label-caps">Ship to</p>
         <p className="mt-3">
           {order.shippingAddress.name}
           <br />

@@ -15,7 +15,7 @@ export function AdminPagination({
 }) {
   if (totalPages <= 1) return null;
   return (
-    <nav className="mt-4 flex items-center justify-between border-t border-white/10 pt-4 text-sm" aria-label="Pagination">
+    <nav className="mt-4 flex items-center justify-between border-t border-zinc-200 pt-4 text-sm" aria-label="Pagination">
       {page > 1 ? (
         <Link href={pageHref(basePath, params, page - 1)} className="hover:underline">
           Previous

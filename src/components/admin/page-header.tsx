@@ -13,8 +13,8 @@ export function AdminPageHeader({
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-        {description ? <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{description}</p> : null}
+        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">{title}</h1>
+        {description ? <p className="mt-1 max-w-2xl text-sm text-zinc-500">{description}</p> : null}
       </div>
       {action}
     </div>
@@ -33,7 +33,7 @@ export function AdminEmpty({
   cta?: string;
 }) {
   return (
-    <div className="border border-dashed border-white/15 px-6 py-16 text-center">
+    <div className="rounded-2xl border border-dashed border-zinc-200 bg-white px-6 py-16 text-center">
       <p className="text-sm font-medium">{title}</p>
       <p className="mt-2 text-sm text-muted-foreground">{description}</p>
       {href && cta ? (

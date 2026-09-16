@@ -10,18 +10,15 @@ export function AdminHeader({
   role: UserRole;
 }) {
   return (
-    <header className="flex h-14 items-center justify-between border-b border-white/10 px-4 md:h-14 md:px-6">
+    <header className="flex h-16 items-center justify-between gap-4 border-b border-zinc-200 bg-white px-4 md:px-8">
       <AdminMobileNav role={role} />
-      <p className="hidden text-xs uppercase tracking-[0.16em] text-muted-foreground md:block">
-        Internal
-      </p>
-      <div className="flex items-center gap-4">
-        <p className="max-w-[16rem] truncate text-xs text-muted-foreground">
-          <span className="text-foreground">{email ?? "Staff"}</span>
-          <span className="mx-2">·</span>
-          <span className="uppercase tracking-[0.12em]">{role}</span>
-        </p>
-        <LogoutButton />
+      <p className="hidden text-sm text-zinc-500 md:block">Operations</p>
+      <div className="flex items-center gap-3">
+        <div className="hidden text-right text-xs sm:block">
+          <p className="font-medium text-zinc-900">{email ?? "Staff"}</p>
+          <p className="uppercase tracking-[0.14em] text-zinc-500">{role}</p>
+        </div>
+        <LogoutButton className="text-zinc-600 hover:text-zinc-900" />
       </div>
     </header>
   );

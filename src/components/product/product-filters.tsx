@@ -38,12 +38,12 @@ export function ProductFilters({
   };
 
   return (
-    <div className="flex flex-col gap-6 border-b border-white/10 py-6 md:flex-row md:flex-wrap md:items-end md:justify-between">
+    <div className="flex flex-col gap-6 border-b border-current/15 py-8 md:flex-row md:flex-wrap md:items-end md:justify-between">
       <div className="flex flex-wrap gap-2">
         <Link
           href={hrefFor({ category: undefined })}
           className={`label-caps border px-3 py-2 text-[0.6rem] ${
-            !current.category ? "border-off-white text-off-white" : "border-white/15 text-stone"
+            !current.category ? "border-current text-current" : "border-current/20 text-[#6f6b66]"
           }`}
         >
           All
@@ -54,8 +54,8 @@ export function ProductFilters({
             href={hrefFor({ category: category.slug })}
             className={`label-caps border px-3 py-2 text-[0.6rem] ${
               current.category === category.slug
-                ? "border-off-white text-off-white"
-                : "border-white/15 text-stone"
+                ? "border-current text-current"
+                : "border-current/20 text-[#6f6b66]"
             }`}
           >
             {category.name}
@@ -74,7 +74,7 @@ export function ProductFilters({
           name="search"
           defaultValue={current.search}
           placeholder="Search"
-          className="h-10 w-40 border border-white/15 bg-transparent px-3 text-sm"
+          className="h-10 w-40 border border-current/20 bg-transparent px-3 text-sm"
         />
         <label className="sr-only" htmlFor="sort">
           Sort
@@ -83,7 +83,7 @@ export function ProductFilters({
           id="sort"
           name="sort"
           defaultValue={current.sort ?? "newest"}
-          className="h-10 border border-white/15 bg-black px-3 text-sm"
+          className="h-10 border border-current/20 bg-transparent px-3 text-sm"
         >
           {SORTS.map((sort) => (
             <option key={sort.value} value={sort.value}>
@@ -91,7 +91,7 @@ export function ProductFilters({
             </option>
           ))}
         </select>
-        <button type="submit" className="label-caps h-10 border border-off-white px-4 text-[0.6rem]">
+        <button type="submit" className="label-caps h-10 border border-current px-4 text-[0.6rem]">
           Apply
         </button>
       </form>
