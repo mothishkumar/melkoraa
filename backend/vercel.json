@@ -8,9 +8,9 @@
     }
   ],
   "functions": {
-    "api/index.ts": {
+    "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": "../src/**"
+      "includeFiles": ".vercel-shared-src/**"
     }
   }
 }
