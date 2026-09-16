@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, beforeEach, afterEach } from "vitest";
 
 import { AUTH_MESSAGES, mapAuthError } from "@/lib/auth/errors";
 import { isProtectedPath } from "@/lib/auth/paths";
@@ -11,6 +11,7 @@ import {
   resolvePostLoginPath,
 } from "@/lib/auth/permissions";
 import { getSafeRedirectPath } from "@/lib/auth/redirect";
+import { getSiteUrl } from "@/lib/auth/site-url";
 import {
   loginSchema,
   registerSchema,
@@ -145,3 +146,36 @@ describe("auth error mapping", () => {
     );
   });
 });
+
+describe("getSiteUrl", () => {
+  const keys = ["NEXT_PUBLIC_SITE_URL", "VERCEL_URL"] as const;
+  const previous: Record<string, string | undefined> = {};
+
+  beforeEach(() => {
+    for (const key of keys) {
+      previous[key] = process.env[key];
+    }
+  });
+
+  afterEach(() => {
+    for (const key of keys) {
+      const value = previous[key];
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  });
+
+  it("ignores blank NEXT_PUBLIC_SITE_URL so Vercel builds do not throw Invalid URL", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "   ";
+    process.env.VERCEL_URL = "melkoraa-abc.vercel.app";
+    expect(getSiteUrl()).toBe("https://melkoraa-abc.vercel.app");
+    expect(() => new URL(getSiteUrl())).not.toThrow();
+  });
+
+  it("prefers a configured public site URL", () => {
+    process.env.NEXT_PUBLIC_SITE_URL = "https://melkoraa.in/";
+    process.env.VERCEL_URL = "ignored.vercel.app";
+    expect(getSiteUrl()).toBe("https://melkoraa.in");
+  });
+});
+
