@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -46,24 +45,15 @@ export function HomeHero({ products = [] }: { products?: ProductListItem[] }) {
         </div>
 
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <motion.p
-            className="editorial-display text-sm tracking-[0.5em] text-off-white/80"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <p className="editorial-display text-sm tracking-[0.5em] text-off-white/80">
             {brand.name}
-          </motion.p>
-          <motion.h1
-            className="editorial-display mt-6 max-w-[16ch] text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.92] text-off-white"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.08 }}
-          >
+          </p>
+          <h1 className="editorial-display mt-6 max-w-[16ch] text-[clamp(2.4rem,7vw,6.5rem)] leading-[0.92] text-off-white">
             {brand.drop.code}
             <span className="mt-3 block text-[0.38em] tracking-[0.42em] text-off-white/80">
               {brand.drop.name}
             </span>
-          </motion.h1>
+          </h1>
           <p className="mt-6 text-[0.7rem] tracking-[0.32em] text-stone uppercase">
             Four stories. One higher tomorrow.
           </p>
