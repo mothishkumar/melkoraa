@@ -9,8 +9,7 @@ const backendRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const repoRoot = resolve(backendRoot, "..");
 const sharedRoot = resolve(backendRoot, ".vercel-shared-src");
 const sharedSrc = resolve(sharedRoot, "src");
-const handlerOut = resolve(backendRoot, "vercel-handler.js");
-const handlerShims = resolve(backendRoot, "shims");
+const apiOut = resolve(backendRoot, "api/index.js");
 const prebuilt = process.argv.includes("--prebuilt");
 
 rmSync(sharedRoot, { recursive: true, force: true });
@@ -19,52 +18,44 @@ cpSync(resolve(repoRoot, "src"), sharedSrc, { recursive: true });
 
 await esbuild.build({
   entryPoints: [resolve(backendRoot, "src/vercel-handler.ts")],
-  outfile: handlerOut,
+  outfile: apiOut,
   bundle: true,
   platform: "node",
   target: "node20",
   format: "esm",
-  packages: "external",
+  packages: "bundle",
   alias: {
     "@/lib/supabase/server": resolve(backendRoot, "src/shims/supabase-server.ts"),
     "@": sharedSrc,
+    "server-only": resolve(backendRoot, "src/shims/server-only-empty.cjs"),
+    react: resolve(backendRoot, "src/shims/react.ts"),
   },
 });
 
-// register.mjs is bundled with its own createRequire; inject one global require shim instead.
 const banner =
   "import { createRequire } from 'module'; const require = createRequire(import.meta.url);\n";
-let bundle = readFileSync(handlerOut, "utf8");
+let bundle = readFileSync(apiOut, "utf8");
 bundle = bundle.replace(
   /import \{ createRequire \} from "node:module";\nimport \{ fileURLToPath \} from "node:url";\nvar require2 = createRequire\(import\.meta\.url\);/,
   'import { fileURLToPath } from "node:url";',
 );
 bundle = bundle.replace(/\brequire2\b/g, "require");
-writeFileSync(handlerOut, banner + bundle);
+writeFileSync(apiOut, banner + bundle);
 
-// Runtime shim colocated with the handler (not under api/).
-rmSync(handlerShims, { recursive: true, force: true });
-mkdirSync(handlerShims, { recursive: true });
+const apiShims = resolve(backendRoot, "api/shims");
+rmSync(apiShims, { recursive: true, force: true });
+mkdirSync(apiShims, { recursive: true });
 cpSync(
   resolve(backendRoot, "src/shims/server-only-empty.cjs"),
-  resolve(handlerShims, "server-only-empty.cjs"),
+  resolve(apiShims, "server-only-empty.cjs"),
 );
 
 if (prebuilt) {
-  const { execSync } = await import("node:child_process");
-  const { existsSync } = await import("node:fs");
   const funcDir = resolve(backendRoot, ".vercel/output/functions/api/index.func");
   rmSync(resolve(backendRoot, ".vercel/output"), { recursive: true, force: true });
   mkdirSync(funcDir, { recursive: true });
-  cpSync(handlerOut, resolve(funcDir, "index.js"));
-  cpSync(handlerShims, resolve(funcDir, "shims"), { recursive: true });
-  for (const file of ["package.json", "package-lock.json"]) {
-    cpSync(resolve(backendRoot, file), resolve(funcDir, file));
-  }
-  if (existsSync(resolve(backendRoot, "vendor"))) {
-    cpSync(resolve(backendRoot, "vendor"), resolve(funcDir, "vendor"), { recursive: true });
-  }
-  execSync("npm ci --omit=dev --ignore-scripts", { cwd: funcDir, stdio: "inherit" });
+  cpSync(apiOut, resolve(funcDir, "index.js"));
+  cpSync(apiShims, resolve(funcDir, "shims"), { recursive: true });
   writeFileSync(
     resolve(funcDir, ".vc-config.json"),
     JSON.stringify(
@@ -83,7 +74,7 @@ if (prebuilt) {
     resolve(backendRoot, ".vercel/output/config.json"),
     JSON.stringify({ version: 3, routes: [{ src: "/(.*)", dest: "/api" }] }, null, 2),
   );
-  console.log("Bundled Vercel API handler to vercel-handler.js and .vercel/output");
+  console.log("Bundled Vercel API handler to api/index.js and .vercel/output");
 } else {
-  console.log("Bundled Vercel API handler to vercel-handler.js");
+  console.log("Bundled Vercel API handler to api/index.js");
 }
