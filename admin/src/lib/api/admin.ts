@@ -1,5 +1,5 @@
 import { apiPage, apiRequest } from "@/lib/api/client";
-import type { AdminAuditLog, AdminCustomer, AdminDashboardSnapshot, AdminOrderSummary } from "@/types/admin";
+import type { AdminAuditLog, AdminCustomer, AdminDashboardSnapshot, AdminOrderSummary, AdminPayment } from "@/types/admin";
 import type { AdminProductDetail, AdminProductListItem, PublicCategory, PublicCollection, PublicDropSummary } from "@/types/catalog";
 import type { InventoryDetail, InventoryListItem } from "@/types/inventory";
 import type { OrderDetailDto } from "@/types/orders";
@@ -113,6 +113,10 @@ export function listAdminCustomersRequest(params: Record<string, string | number
   return apiPage<AdminCustomer>(`/api/v1/admin/customers${qs(params)}`);
 }
 
+export function listAdminPaymentsRequest(params: Record<string, string | number | undefined>) {
+  return apiPage<AdminPayment>(`/api/v1/admin/payments${qs(params)}`);
+}
+
 export function listAdminDropsRequest(params: Record<string, string | number | undefined>) {
   return apiPage<PublicDropSummary>(`/api/v1/admin/drops${qs(params)}`);
 }
@@ -176,6 +180,24 @@ export function archiveAdminCollectionRequest(id: string) {
 
 export function listAdminCategoriesRequest(params: Record<string, string | number | undefined> = { page: 1, pageSize: 50 }) {
   return apiPage<PublicCategory>(`/api/v1/admin/categories${qs(params)}`);
+}
+
+export function createAdminCategoryRequest(body: unknown) {
+  return apiRequest<PublicCategory>("/api/v1/admin/categories", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+}
+
+export function updateAdminCategoryRequest(id: string, body: unknown) {
+  return apiRequest<PublicCategory>(`/api/v1/admin/categories/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
+}
+
+export function deleteAdminCategoryRequest(id: string) {
+  return apiRequest<void>(`/api/v1/admin/categories/${id}`, { method: "DELETE" });
 }
 
 export function listAdminAuditLogsRequest(params: Record<string, string | number | undefined>) {

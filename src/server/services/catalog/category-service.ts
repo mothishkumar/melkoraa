@@ -20,7 +20,26 @@ export async function listPublicCategories(page: number, pageSize: number) {
   };
 }
 
-export const listAdminCategories = listPublicCategories;
+export async function listAdminCategories(query: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  sort: "name_asc" | "name_desc" | "newest" | "oldest";
+} | number, legacyPageSize?: number) {
+  const filters =
+    typeof query === "number"
+      ? {
+          page: query,
+          pageSize: legacyPageSize ?? 20,
+          sort: "name_asc" as const,
+        }
+      : query;
+  const { rows, total } = await categoryRepo.listAdminCategories(filters);
+  return {
+    data: rows.map(mapCategory),
+    pagination: paginationMeta(filters.page, filters.pageSize, total),
+  };
+}
 
 export async function createCategory(
   input: { name: string; slug: string; description?: string | null },

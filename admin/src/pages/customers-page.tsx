@@ -31,12 +31,13 @@ export function CustomersPage() {
     page: searchParams.get("page") ?? undefined,
     pageSize: searchParams.get("pageSize") ?? undefined,
     search: searchParams.get("search") ?? undefined,
+    sort: searchParams.get("sort") ?? undefined,
   });
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    void listAdminCustomersRequest({ page: query.page, pageSize: query.pageSize, search: query.search })
+    void listAdminCustomersRequest({ page: query.page, pageSize: query.pageSize, search: query.search, sort: query.sort })
       .then((result) => {
         if (!cancelled) {
           setCustomers(result.data);
@@ -80,6 +81,12 @@ export function CustomersPage() {
           placeholder="Search name or phone"
           className="h-8 min-w-[12rem] flex-1 border border-input bg-transparent px-2 text-sm"
         />
+        <select name="sort" defaultValue={query.sort} className="h-8 border border-input bg-transparent px-2 text-sm">
+          <option value="newest">Newest</option>
+          <option value="oldest">Oldest</option>
+          <option value="name_asc">Name A–Z</option>
+          <option value="name_desc">Name Z–A</option>
+        </select>
         <Button type="submit" variant="outline">Filter</Button>
       </form>
       {error ? <p className="mb-4 text-sm text-destructive">{error}</p> : null}
@@ -117,7 +124,7 @@ export function CustomersPage() {
           </Table>
         </div>
       )}
-      <AdminPagination page={page} totalPages={totalPages} basePath="/customers" params={{ search: query.search }} />
+      <AdminPagination page={page} totalPages={totalPages} basePath="/customers" params={{ search: query.search, sort: query.sort }} />
     </div>
   );
 }

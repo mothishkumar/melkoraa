@@ -47,6 +47,7 @@ export async function listAdminOrders(
     status?: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "returned";
     paymentStatus?: "pending" | "authorized" | "paid" | "failed" | "refunded" | "partially_refunded";
     search?: string;
+    sort?: "newest" | "oldest" | "total_asc" | "total_desc";
   } = {},
 ) {
   const { rows, total } = await orderRepo.listOrdersAdmin({

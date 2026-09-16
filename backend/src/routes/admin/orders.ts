@@ -21,6 +21,7 @@ adminOrdersRouter.get(
         status: query.status,
         paymentStatus: query.paymentStatus,
         search: query.search,
+        sort: query.sort,
       });
       sendPage(res, result.data, result.pagination);
     });

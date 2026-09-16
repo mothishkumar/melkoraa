@@ -1,7 +1,8 @@
-import { asc, count, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or, type SQL } from "drizzle-orm";
 
 import { categories, productCategories } from "@/db/schema";
 import { loadPagedRows } from "@/db/paginate";
+import { escapeIlike } from "@/lib/catalog/rules";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export async function listCategories(
@@ -25,6 +26,55 @@ export async function listCategories(
         .limit(pageSize)
         .offset(offset),
     () => client.select({ value: count() }).from(categories),
+  );
+}
+
+export async function listAdminCategories(
+  filters: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    sort: "name_asc" | "name_desc" | "newest" | "oldest";
+  },
+  db?: CatalogDb,
+) {
+  const client = catalogDb(db);
+  const offset = (filters.page - 1) * filters.pageSize;
+  const conditions: SQL[] = [];
+  if (filters.search) {
+    const pattern = `%${escapeIlike(filters.search)}%`;
+    const search = or(
+      ilike(categories.name, pattern),
+      ilike(categories.slug, pattern),
+      ilike(categories.description, pattern),
+    );
+    if (search) conditions.push(search);
+  }
+  const where = conditions.length ? and(...conditions) : undefined;
+  const order =
+    filters.sort === "name_desc"
+      ? [desc(categories.name), asc(categories.id)]
+      : filters.sort === "newest"
+        ? [desc(categories.createdAt), asc(categories.id)]
+        : filters.sort === "oldest"
+          ? [asc(categories.createdAt), asc(categories.id)]
+          : [asc(categories.name), asc(categories.id)];
+
+  return loadPagedRows(
+    () =>
+      client
+        .select({
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+          description: categories.description,
+        })
+        .from(categories)
+        .where(where)
+        .orderBy(...order)
+        .limit(filters.pageSize)
+        .offset(offset),
+    () => client.select({ value: count() }).from(categories).where(where),
   );
 }
 

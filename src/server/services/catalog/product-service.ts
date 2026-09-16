@@ -219,6 +219,7 @@ export async function getAdminProduct(id: string) {
     images: images.map(mapImage),
     variants: variants.map((row) => ({
       ...mapVariant(row),
+      barcode: row.barcode,
       isActive: row.isActive,
     })),
     categories: categoryRows.map(mapCategory),

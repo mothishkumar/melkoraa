@@ -47,6 +47,17 @@ export type AdminCustomer = {
   orderCount: number;
 };
 
+export type AdminPayment = {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  provider: string;
+  status: "pending" | "authorized" | "paid" | "failed" | "refunded" | "partially_refunded";
+  amount: string;
+  currency: string;
+  createdAt: string;
+};
+
 export type AdminAuditLog = {
   id: string;
   actorId: string | null;

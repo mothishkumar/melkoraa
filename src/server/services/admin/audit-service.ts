@@ -3,7 +3,14 @@ import { paginationMeta } from "@/server/http";
 import * as auditRepo from "@/server/repositories/admin/audit-repository";
 import type { AdminAuditLog } from "@/types/admin";
 
-export async function listAdminAuditLogs(query: { page: number; pageSize: number }) {
+export async function listAdminAuditLogs(query: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  action?: string;
+  entityType?: string;
+  sort: "newest" | "oldest";
+}) {
   const { rows, total } = await auditRepo.listAuditLogs(query);
   const data: AdminAuditLog[] = rows.map((row) => ({
     id: row.id,

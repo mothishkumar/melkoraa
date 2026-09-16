@@ -1,9 +1,9 @@
 import { Router } from "express";
 
 import {
+  adminDropQuerySchema,
   createDropSchema,
   dropProductSchema,
-  publicListQuerySchema,
   updateDropSchema,
   uuidSchema,
 } from "@/lib/validation/catalog";
@@ -30,8 +30,8 @@ adminDropsRouter.get(
   requireStaff,
   asyncHandler(async (req, res) => {
     await handleRoute(res, async () => {
-      const query = publicListQuerySchema.parse(expressQuery(req.query as Record<string, unknown>));
-      const result = await listAdminDrops(query.page, query.pageSize);
+      const query = adminDropQuerySchema.parse(expressQuery(req.query as Record<string, unknown>));
+      const result = await listAdminDrops(query);
       sendPage(res, result.data, result.pagination);
     });
   }),

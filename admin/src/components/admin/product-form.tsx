@@ -83,7 +83,22 @@ export function ProductForm({
       </div>
       <div>
         <Label htmlFor="basePrice">Price</Label>
-        <Input id="basePrice" className="mt-1 rounded-none" {...form.register("basePrice")} />
+        <Input id="basePrice" type="number" min="0" step="0.01" className="mt-1 rounded-none" {...form.register("basePrice")} />
+      </div>
+      <div>
+        <Label htmlFor="compareAtPrice">Compare-at price</Label>
+        <Input
+          id="compareAtPrice"
+          type="number"
+          min="0"
+          step="0.01"
+          className="mt-1 rounded-none"
+          {...form.register("compareAtPrice")}
+        />
+      </div>
+      <div>
+        <Label htmlFor="brand">Brand</Label>
+        <Input id="brand" className="mt-1 rounded-none" {...form.register("brand")} />
       </div>
       <div>
         <Label htmlFor="status">Status</Label>
@@ -94,8 +109,20 @@ export function ProductForm({
         </select>
       </div>
       <div>
+        <Label htmlFor="shortDescription">Short description</Label>
+        <Textarea id="shortDescription" className="mt-1 rounded-none" rows={2} {...form.register("shortDescription")} />
+      </div>
+      <div>
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" className="mt-1 rounded-none" rows={5} {...form.register("description")} />
+      </div>
+      <div>
+        <Label htmlFor="seoTitle">SEO title</Label>
+        <Input id="seoTitle" className="mt-1 rounded-none" {...form.register("seoTitle")} />
+      </div>
+      <div>
+        <Label htmlFor="seoDescription">SEO description</Label>
+        <Textarea id="seoDescription" className="mt-1 rounded-none" rows={2} {...form.register("seoDescription")} />
       </div>
       {categories.length > 0 ? (
         <fieldset>

@@ -106,6 +106,7 @@ export type AdminProductListItem = {
 
 export type AdminVariant = PublicVariant & {
   isActive: boolean;
+  barcode: string | null;
 };
 
 export type AdminProductDetail = {

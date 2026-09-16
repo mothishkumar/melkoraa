@@ -87,6 +87,13 @@ export function parsePublicProductQuery(input: Record<string, string | undefined
 
 export const publicListQuerySchema = paginationSchema;
 
+export const categorySortSchema = z.enum(["name_asc", "name_desc", "newest", "oldest"]);
+
+export const adminCategoryQuerySchema = paginationSchema.extend({
+  search: z.string().trim().max(120).optional(),
+  sort: categorySortSchema.default("name_asc"),
+});
+
 export const adminProductQuerySchema = paginationSchema.extend({
   search: z.string().trim().max(120).optional(),
   status: z.enum(["draft", "active", "archived"]).optional(),
@@ -102,6 +109,19 @@ export const dropStatusSchema = z.enum([
   "ended",
   "archived",
 ]);
+
+export const adminDropQuerySchema = paginationSchema.extend({
+  search: z.string().trim().max(120).optional(),
+  status: dropStatusSchema.optional(),
+  sort: z.enum(["newest", "oldest", "name_asc", "name_desc", "start_asc", "start_desc"]).default("newest"),
+});
+
+export const adminCollectionQuerySchema = paginationSchema.extend({
+  search: z.string().trim().max(120).optional(),
+  status: collectionStatusSchema.optional(),
+  sort: z.enum(["newest", "oldest", "name_asc", "name_desc"]).default("newest"),
+});
+
 export const imageTypeSchema = z.enum([
   "primary",
   "secondary",

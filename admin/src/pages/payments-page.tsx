@@ -14,44 +14,37 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAdminRefresh } from "@/hooks/use-admin-refresh";
-import { listAdminOrdersRequest } from "@/lib/api/admin";
+import { listAdminPaymentsRequest } from "@/lib/api/admin";
 import { userFacingApiMessage } from "@/lib/api/client";
+import { adminPaymentQuerySchema } from "@/lib/validation/admin";
 import { formatInr } from "@/lib/catalog/money";
-import { orderListQuerySchema } from "@/lib/validation/checkout";
-import type { AdminOrderSummary } from "@/types/admin";
+import type { AdminPayment } from "@/types/admin";
 
-export function OrdersPage() {
+export function PaymentsPage() {
   const { tick } = useAdminRefresh();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [orders, setOrders] = useState<AdminOrderSummary[]>([]);
+  const [payments, setPayments] = useState<AdminPayment[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const query = orderListQuerySchema.parse({
+  const query = adminPaymentQuerySchema.parse({
     page: searchParams.get("page") ?? undefined,
     pageSize: searchParams.get("pageSize") ?? undefined,
     search: searchParams.get("search") ?? undefined,
-    status: searchParams.get("status") || undefined,
-    paymentStatus: searchParams.get("paymentStatus") || undefined,
+    provider: searchParams.get("provider") ?? undefined,
+    status: searchParams.get("status") ?? undefined,
     sort: searchParams.get("sort") ?? undefined,
   });
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    void listAdminOrdersRequest({
-      page: query.page,
-      pageSize: query.pageSize,
-      search: query.search,
-      status: query.status,
-      paymentStatus: query.paymentStatus,
-      sort: query.sort,
-    })
+    void listAdminPaymentsRequest(query)
       .then((result) => {
         if (!cancelled) {
-          setOrders(result.data);
+          setPayments(result.data);
           setPage(result.pagination.page);
           setTotalPages(result.pagination.totalPages);
           setError(null);
@@ -66,13 +59,16 @@ export function OrdersPage() {
     return () => {
       cancelled = true;
     };
-  }, [tick, searchParams]);
+  }, [searchParams, tick]);
 
   return (
     <div className="mx-auto max-w-6xl">
-      <AdminPageHeader title="Orders" description="Staff can view all orders. Refunds and fulfillment are not implemented." />
+      <AdminPageHeader
+        title="Payments"
+        description="Read-only payment records. Provider secrets, signatures, and payment metadata are never exposed."
+      />
       <form
-        className="mb-4 flex flex-wrap gap-2"
+        className="admin-panel mb-4 flex flex-wrap gap-2 p-3"
         onSubmit={(event) => {
           event.preventDefault();
           const form = new FormData(event.currentTarget);
@@ -86,69 +82,63 @@ export function OrdersPage() {
         <input
           name="search"
           defaultValue={query.search ?? ""}
-          placeholder="Order number"
-          className="h-8 min-w-[10rem] flex-1 border border-input bg-transparent px-2 text-sm"
+          placeholder="Search order or provider order ID"
+          className="h-9 min-w-[13rem] flex-1 rounded-lg border border-zinc-200 bg-white px-3 text-sm"
         />
-        <select name="status" defaultValue={query.status ?? ""} className="h-8 border border-input bg-transparent px-2 text-sm">
+        <input
+          name="provider"
+          defaultValue={query.provider ?? ""}
+          placeholder="Provider"
+          className="h-9 w-28 rounded-lg border border-zinc-200 bg-white px-3 text-sm"
+        />
+        <select name="status" defaultValue={query.status ?? ""} className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm">
           <option value="">All statuses</option>
           <option value="pending">pending</option>
-          <option value="confirmed">confirmed</option>
-          <option value="processing">processing</option>
-          <option value="shipped">shipped</option>
-          <option value="delivered">delivered</option>
-          <option value="cancelled">cancelled</option>
-          <option value="returned">returned</option>
-        </select>
-        <select name="paymentStatus" defaultValue={query.paymentStatus ?? ""} className="h-8 border border-input bg-transparent px-2 text-sm">
-          <option value="">All payments</option>
-          <option value="pending">pending</option>
+          <option value="authorized">authorized</option>
           <option value="paid">paid</option>
           <option value="failed">failed</option>
-          <option value="authorized">authorized</option>
           <option value="refunded">refunded</option>
           <option value="partially_refunded">partially refunded</option>
         </select>
-        <select name="sort" defaultValue={query.sort} className="h-8 border border-input bg-transparent px-2 text-sm">
+        <select name="sort" defaultValue={query.sort} className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-sm">
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
-          <option value="total_asc">Total ↑</option>
-          <option value="total_desc">Total ↓</option>
+          <option value="amount_asc">Amount ↑</option>
+          <option value="amount_desc">Amount ↓</option>
         </select>
         <Button type="submit" variant="outline">Filter</Button>
       </form>
       {error ? <p className="mb-4 text-sm text-destructive">{error}</p> : null}
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading orders…</p>
-      ) : orders.length === 0 ? (
-        <AdminEmpty title="No orders" description="No orders match these filters." />
+        <p className="text-sm text-muted-foreground">Loading payments…</p>
+      ) : payments.length === 0 ? (
+        <AdminEmpty title="No payment records" description="No payment records match these filters." />
       ) : (
         <div className="admin-panel overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Order</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Customer</TableHead>
+                <TableHead>Provider</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Items</TableHead>
-                <TableHead className="text-right">Total</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Created</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id}>
+              {payments.map((payment) => (
+                <TableRow key={payment.id}>
                   <TableCell>
-                    <Link to={`/orders/${order.id}`} className="hover:underline">{order.orderNumber}</Link>
+                    <Link to={`/orders/${payment.orderId}`} className="font-medium hover:underline">
+                      {payment.orderNumber}
+                    </Link>
                   </TableCell>
+                  <TableCell>{payment.provider}</TableCell>
+                  <TableCell><StatusPill value={payment.status} /></TableCell>
+                  <TableCell className="text-right tabular-nums">{formatInr(payment.amount)}</TableCell>
                   <TableCell className="whitespace-nowrap text-xs">
-                    {new Date(order.createdAt).toLocaleString("en-IN")}
+                    {new Date(payment.createdAt).toLocaleString("en-IN")}
                   </TableCell>
-                  <TableCell className="max-w-[8rem] truncate font-mono text-xs">{order.userId ?? "—"}</TableCell>
-                  <TableCell><StatusPill value={order.status} /></TableCell>
-                  <TableCell><StatusPill value={order.paymentStatus} /></TableCell>
-                  <TableCell>{order.itemCount}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatInr(order.totalAmount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -158,8 +148,13 @@ export function OrdersPage() {
       <AdminPagination
         page={page}
         totalPages={totalPages}
-        basePath="/orders"
-        params={{ search: query.search, status: query.status, paymentStatus: query.paymentStatus, sort: query.sort }}
+        basePath="/payments"
+        params={{
+          search: query.search,
+          provider: query.provider,
+          status: query.status,
+          sort: query.sort,
+        }}
       />
     </div>
   );

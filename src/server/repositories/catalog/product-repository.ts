@@ -303,6 +303,7 @@ export async function listVariantsForProducts(productIds: string[], db?: Catalog
       colorCode: productVariants.colorCode,
       price: productVariants.price,
       compareAtPrice: productVariants.compareAtPrice,
+      barcode: productVariants.barcode,
       isActive: productVariants.isActive,
       available: sql<boolean>`coalesce((${inventory.quantityOnHand} - ${inventory.quantityReserved}) > 0, false)`,
     })
@@ -323,6 +324,7 @@ export async function listVariantsWithAvailability(productId: string, db?: Catal
       colorCode: productVariants.colorCode,
       price: productVariants.price,
       compareAtPrice: productVariants.compareAtPrice,
+      barcode: productVariants.barcode,
       isActive: productVariants.isActive,
       available: sql<boolean>`coalesce((${inventory.quantityOnHand} - ${inventory.quantityReserved}) > 0, false)`,
     })

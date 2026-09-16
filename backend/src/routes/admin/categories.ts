@@ -1,8 +1,8 @@
 import { Router } from "express";
 
 import {
+  adminCategoryQuerySchema,
   createCategorySchema,
-  publicListQuerySchema,
   updateCategorySchema,
   uuidSchema,
 } from "@/lib/validation/catalog";
@@ -26,8 +26,8 @@ adminCategoriesRouter.get(
   requireStaff,
   asyncHandler(async (req, res) => {
     await handleRoute(res, async () => {
-      const query = publicListQuerySchema.parse(expressQuery(req.query as Record<string, unknown>));
-      const result = await listAdminCategories(query.page, query.pageSize);
+      const query = adminCategoryQuerySchema.parse(expressQuery(req.query as Record<string, unknown>));
+      const result = await listAdminCategories(query);
       sendPage(res, result.data, result.pagination);
     });
   }),

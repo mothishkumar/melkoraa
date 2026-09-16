@@ -198,6 +198,7 @@ export async function listOrdersAdmin(
     status?: typeof orders.$inferSelect.status;
     paymentStatus?: typeof orders.$inferSelect.paymentStatus;
     search?: string;
+    sort?: "newest" | "oldest" | "total_asc" | "total_desc";
   },
   db?: OrderDb,
 ) {
@@ -210,13 +211,21 @@ export async function listOrdersAdmin(
     conditions.push(ilike(orders.orderNumber, `%${filters.search}%`));
   }
   const where = conditions.length ? and(...conditions) : undefined;
+  const order =
+    filters.sort === "oldest"
+      ? [asc(orders.createdAt), asc(orders.id)]
+      : filters.sort === "total_asc"
+        ? [asc(orders.totalAmount), asc(orders.id)]
+        : filters.sort === "total_desc"
+          ? [desc(orders.totalAmount), desc(orders.id)]
+          : [desc(orders.createdAt), desc(orders.id)];
   return loadPagedRows(
     () =>
       client
         .select()
         .from(orders)
         .where(where)
-        .orderBy(desc(orders.createdAt), desc(orders.id))
+        .orderBy(...order)
         .limit(filters.pageSize)
         .offset(offset),
     () => client.select({ value: count() }).from(orders).where(where),

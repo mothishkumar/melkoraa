@@ -25,11 +25,28 @@ export async function listPublicCollections(page: number, pageSize: number) {
   };
 }
 
-export async function listAdminCollections(page: number, pageSize: number) {
-  const { rows, total } = await collectionRepo.listAdminCollections(page, pageSize);
+export async function listAdminCollections(
+  queryOrPage: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    status?: CollectionStatus;
+    sort: "newest" | "oldest" | "name_asc" | "name_desc";
+  } | number,
+  legacyPageSize?: number,
+) {
+  const query =
+    typeof queryOrPage === "number"
+      ? {
+          page: queryOrPage,
+          pageSize: legacyPageSize ?? 20,
+          sort: "newest" as const,
+        }
+      : queryOrPage;
+  const { rows, total } = await collectionRepo.listAdminCollections(query);
   return {
     data: rows.map(mapCollection),
-    pagination: paginationMeta(page, pageSize, total),
+    pagination: paginationMeta(query.page, query.pageSize, total),
   };
 }
 

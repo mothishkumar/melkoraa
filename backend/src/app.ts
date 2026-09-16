@@ -50,7 +50,7 @@ export function createApp() {
   api.use("/checkout", requireServerEnv, checkoutRouter);
   api.use("/payments", requireServerEnv, paymentsRouter);
   api.use("/orders", requireServerEnv, ordersRouter);
-  api.use("/admin", requireServerEnv, adminRouter);
+  api.use("/admin", adminRouter);
 
   app.use("/api/v1", api);
 

@@ -1,21 +1,25 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { StaffProtectedRoute } from "@/components/staff-protected-route";
 import { AuthProvider } from "@/contexts/auth-context";
-import { AdminLoginForm } from "@/features/auth/components/login-form";
 import { AdminLayout } from "@/layouts/admin-layout";
-import { AuditLogsPage } from "@/pages/audit-logs-page";
-import { CollectionsPage } from "@/pages/collections-page";
-import { CustomersPage } from "@/pages/customers-page";
-import { DashboardPage } from "@/pages/dashboard-page";
-import { DropDetailPage } from "@/pages/drop-detail-page";
-import { DropsPage } from "@/pages/drops-page";
-import { InventoryPage } from "@/pages/inventory-page";
-import { NewProductPage } from "@/pages/new-product-page";
-import { OrderDetailPage } from "@/pages/order-detail-page";
-import { OrdersPage } from "@/pages/orders-page";
-import { ProductDetailPage } from "@/pages/product-detail-page";
-import { ProductsPage } from "@/pages/products-page";
+
+const AdminLoginForm = lazy(async () => ({ default: (await import("@/features/auth/components/login-form")).AdminLoginForm }));
+const AuditLogsPage = lazy(async () => ({ default: (await import("@/pages/audit-logs-page")).AuditLogsPage }));
+const CategoriesPage = lazy(async () => ({ default: (await import("@/pages/categories-page")).CategoriesPage }));
+const CollectionsPage = lazy(async () => ({ default: (await import("@/pages/collections-page")).CollectionsPage }));
+const CustomersPage = lazy(async () => ({ default: (await import("@/pages/customers-page")).CustomersPage }));
+const DashboardPage = lazy(async () => ({ default: (await import("@/pages/dashboard-page")).DashboardPage }));
+const DropDetailPage = lazy(async () => ({ default: (await import("@/pages/drop-detail-page")).DropDetailPage }));
+const DropsPage = lazy(async () => ({ default: (await import("@/pages/drops-page")).DropsPage }));
+const InventoryPage = lazy(async () => ({ default: (await import("@/pages/inventory-page")).InventoryPage }));
+const NewProductPage = lazy(async () => ({ default: (await import("@/pages/new-product-page")).NewProductPage }));
+const OrderDetailPage = lazy(async () => ({ default: (await import("@/pages/order-detail-page")).OrderDetailPage }));
+const OrdersPage = lazy(async () => ({ default: (await import("@/pages/orders-page")).OrdersPage }));
+const PaymentsPage = lazy(async () => ({ default: (await import("@/pages/payments-page")).PaymentsPage }));
+const ProductDetailPage = lazy(async () => ({ default: (await import("@/pages/product-detail-page")).ProductDetailPage }));
+const ProductsPage = lazy(async () => ({ default: (await import("@/pages/products-page")).ProductsPage }));
 
 function UnauthorizedPage() {
   return (
@@ -32,7 +36,14 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
+        <Suspense
+          fallback={
+            <div className="admin-shell flex min-h-screen items-center justify-center bg-[#f3f4f6] text-sm text-zinc-500">
+              Loading…
+            </div>
+          }
+        >
+          <Routes>
           <Route path="/login" element={<AdminLoginForm />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
           <Route
@@ -53,9 +64,11 @@ export default function App() {
               }
             />
             <Route path="products/:id" element={<ProductDetailPage />} />
+            <Route path="categories" element={<CategoriesPage />} />
             <Route path="inventory" element={<InventoryPage />} />
             <Route path="orders" element={<OrdersPage />} />
             <Route path="orders/:id" element={<OrderDetailPage />} />
+            <Route path="payments" element={<PaymentsPage />} />
             <Route path="customers" element={<CustomersPage />} />
             <Route path="drops" element={<DropsPage />} />
             <Route path="drops/:id" element={<DropDetailPage />} />
@@ -70,7 +83,8 @@ export default function App() {
             />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   );

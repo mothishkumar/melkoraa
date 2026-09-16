@@ -1,8 +1,8 @@
 import { Router } from "express";
 
 import {
+  adminCollectionQuerySchema,
   createCollectionSchema,
-  publicListQuerySchema,
   updateCollectionSchema,
   uuidSchema,
 } from "@/lib/validation/catalog";
@@ -26,8 +26,8 @@ adminCollectionsRouter.get(
   requireStaff,
   asyncHandler(async (req, res) => {
     await handleRoute(res, async () => {
-      const query = publicListQuerySchema.parse(expressQuery(req.query as Record<string, unknown>));
-      const result = await listAdminCollections(query.page, query.pageSize);
+      const query = adminCollectionQuerySchema.parse(expressQuery(req.query as Record<string, unknown>));
+      const result = await listAdminCollections(query);
       sendPage(res, result.data, result.pagination);
     });
   }),

@@ -5,11 +5,13 @@ import { useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
+  Tags,
   Warehouse,
   ShoppingBag,
   Users,
   Layers,
   FolderKanban,
+  CreditCard,
   ScrollText,
 } from "lucide-react";
 
@@ -21,8 +23,10 @@ import { cn } from "@/lib/utils";
 const icons: Record<string, typeof LayoutDashboard> = {
   "/": LayoutDashboard,
   "/products": Package,
+  "/categories": Tags,
   "/inventory": Warehouse,
   "/orders": ShoppingBag,
+  "/payments": CreditCard,
   "/customers": Users,
   "/drops": Layers,
   "/collections": FolderKanban,
