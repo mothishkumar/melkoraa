@@ -32,11 +32,14 @@ yarn-error.log*
 
 # env files — commit placeholders only
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env*.local
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 
 # vercel
 .vercel
