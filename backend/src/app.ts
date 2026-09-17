@@ -17,13 +17,11 @@ import { productsRouter } from "./routes/products.js";
 import { webhooksRouter } from "./routes/webhooks.js";
 import { authMiddleware } from "./middleware/auth.js";
 import { requireServerEnv } from "./middleware/require-server-env.js";
+import { allTrustedOrigins } from "./lib/cors-origins.js";
 
 export function createApp() {
   const app = express();
-  const corsOrigins = [
-    process.env.CORS_ORIGIN ?? "http://localhost:5173",
-    process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174",
-  ];
+  const corsOrigins = allTrustedOrigins();
 
   app.use(
     cors({

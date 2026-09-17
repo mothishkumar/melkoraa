@@ -1,16 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
 
+import { allTrustedOrigins } from "../lib/cors-origins.js";
 import { sendError } from "../lib/express-response.js";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 function trustedOrigins() {
-  return new Set(
-    [
-      process.env.CORS_ORIGIN ?? "http://localhost:5173",
-      process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174",
-    ].map((origin) => origin.replace(/\/$/, "")),
-  );
+  return new Set(allTrustedOrigins());
 }
 
 /**

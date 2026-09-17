@@ -108529,15 +108529,31 @@ function requireServerEnv(req, res, next) {
   next();
 }
 
+// src/lib/cors-origins.ts
+function normalizeOrigin(origin) {
+  return origin.trim().replace(/\/$/, "");
+}
+function parseCorsOrigins(value, fallback) {
+  const raw = value?.trim() ? value : fallback;
+  const origins = raw.split(",").map(normalizeOrigin).filter(Boolean);
+  return [...new Set(origins)];
+}
+function allTrustedOrigins() {
+  const customer = parseCorsOrigins(
+    process.env.CORS_ORIGIN,
+    "http://localhost:5173"
+  );
+  const admin = parseCorsOrigins(
+    process.env.ADMIN_CORS_ORIGIN,
+    "http://localhost:5174"
+  );
+  return [.../* @__PURE__ */ new Set([...customer, ...admin])];
+}
+
 // src/middleware/trusted-origin.ts
 var SAFE_METHODS = /* @__PURE__ */ new Set(["GET", "HEAD", "OPTIONS"]);
 function trustedOrigins() {
-  return new Set(
-    [
-      process.env.CORS_ORIGIN ?? "http://localhost:5173",
-      process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174"
-    ].map((origin) => origin.replace(/\/$/, ""))
-  );
+  return new Set(allTrustedOrigins());
 }
 function requireTrustedOrigin(req, res, next) {
   if (SAFE_METHODS.has(req.method)) {
@@ -109948,10 +109964,7 @@ webhooksRouter.post(
 // src/app.ts
 function createApp() {
   const app = (0, import_express26.default)();
-  const corsOrigins = [
-    process.env.CORS_ORIGIN ?? "http://localhost:5173",
-    process.env.ADMIN_CORS_ORIGIN ?? "http://localhost:5174"
-  ];
+  const corsOrigins = allTrustedOrigins();
   app.use(
     (0, import_cors.default)({
       origin: corsOrigins,
