@@ -247,6 +247,14 @@ async function runCustomerFlowBrowser(browser) {
   const browseBody = await page.textContent("body");
   record(section, "drop 01 browse page loads", browseBody && browseBody.length > 100, "drop-001");
 
+  await page.goto(`${CUSTOMER_ORIGIN}/login`, { waitUntil: "networkidle" });
+  await page.fill('input[type="email"]', CUSTOMER_EMAIL);
+  await page.fill('input[type="password"]', CUSTOMER_PASSWORD);
+  await page.click('button[type="submit"]');
+  await page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 20000 });
+
+  await page.goto(`${CUSTOMER_ORIGIN}/drop-001`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(2000);
   const urlBeforeAdd = page.url();
   const addBtn = page.locator('button:has-text("Add to bag"):not([disabled])').first();
   record(section, "add-to-bag control present", (await addBtn.count()) > 0, "drop-001");
@@ -258,12 +266,6 @@ async function runCustomerFlowBrowser(browser) {
   }
   record(section, "add-to-bag no detail redirect", page.url() === urlBeforeAdd, `url=${page.url()}`);
   await page.screenshot({ path: join(MEDIA, "phase6-customer-drop-add.png"), fullPage: true });
-
-  await page.goto(`${CUSTOMER_ORIGIN}/login`, { waitUntil: "networkidle" });
-  await page.fill('input[type="email"]', CUSTOMER_EMAIL);
-  await page.fill('input[type="password"]', CUSTOMER_PASSWORD);
-  await page.click('button[type="submit"]');
-  await page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 20000 });
 
   await page.goto(`${CUSTOMER_ORIGIN}/cart`, { waitUntil: "networkidle" });
   await page.waitForTimeout(2000);
