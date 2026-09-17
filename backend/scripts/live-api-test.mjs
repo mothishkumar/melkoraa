@@ -177,7 +177,7 @@ async function main() {
     // Simulate refresh: new jar with same cookies
     const refreshJar = new Jar();
     for (const [k, v] of customerJar.map) refreshJar.map.set(k, v);
-    const cart2 = await request(refreshJar, "/cart");
+    const cart2 = await request(refreshJar, "/cart", {}, customerOrigin);
     const count2 = cart2.json?.data?.items?.length ?? cart2.json?.items?.length ?? 0;
     record("cart persists (cookie replay)", count2 > 0, `items=${count2}`);
   }

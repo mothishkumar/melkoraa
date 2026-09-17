@@ -19,7 +19,7 @@ export function createExpressSupabaseClient(req: Request, res: Response) {
         cookiesToSet.forEach(({ name, value, options }) => {
           res.cookie(name, value, {
             ...options,
-            httpOnly: options.httpOnly ?? true,
+            httpOnly: true,
             // Cross-origin Vite SPAs (customer + admin) call this API with credentials.
             // Supabase defaults to Lax; override for production API + separate SPA origins.
             sameSite: crossOriginApi ? "none" : ((options.sameSite as "lax" | "strict" | "none" | undefined) ?? "lax"),
