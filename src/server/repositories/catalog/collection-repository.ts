@@ -1,7 +1,8 @@
-import { count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 
 import { collections } from "@/db/schema";
 import { loadPagedRows } from "@/db/paginate";
+import { escapeIlike } from "@/lib/catalog/rules";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export async function listPublicCollections(page: number, pageSize: number, db?: CatalogDb) {
@@ -28,18 +29,48 @@ export async function listPublicCollections(page: number, pageSize: number, db?:
   );
 }
 
-export async function listAdminCollections(page: number, pageSize: number, db?: CatalogDb) {
+export async function listAdminCollections(
+  filters: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    status?: "draft" | "active" | "archived";
+    sort: "newest" | "oldest" | "name_asc" | "name_desc";
+  },
+  db?: CatalogDb,
+) {
   const client = catalogDb(db);
-  const offset = (page - 1) * pageSize;
+  const offset = (filters.page - 1) * filters.pageSize;
+  const conditions: SQL[] = [];
+  if (filters.status) conditions.push(eq(collections.status, filters.status));
+  if (filters.search) {
+    const pattern = `%${escapeIlike(filters.search)}%`;
+    const search = or(
+      ilike(collections.name, pattern),
+      ilike(collections.slug, pattern),
+      ilike(collections.description, pattern),
+    );
+    if (search) conditions.push(search);
+  }
+  const where = conditions.length ? and(...conditions) : undefined;
+  const order =
+    filters.sort === "oldest"
+      ? [asc(collections.createdAt), asc(collections.id)]
+      : filters.sort === "name_asc"
+        ? [asc(collections.name), asc(collections.id)]
+        : filters.sort === "name_desc"
+          ? [desc(collections.name), asc(collections.id)]
+          : [desc(collections.createdAt), desc(collections.id)];
   return loadPagedRows(
     () =>
       client
         .select()
         .from(collections)
-        .orderBy(desc(collections.createdAt))
-        .limit(pageSize)
+        .where(where)
+        .orderBy(...order)
+        .limit(filters.pageSize)
         .offset(offset),
-    () => client.select({ value: count() }).from(collections),
+    () => client.select({ value: count() }).from(collections).where(where),
   );
 }
 

@@ -52,11 +52,28 @@ export async function getPublicDropBySlug(slug: string) {
   };
 }
 
-export async function listAdminDrops(page: number, pageSize: number) {
-  const { rows, total } = await dropRepo.listAdminDrops(page, pageSize);
+export async function listAdminDrops(
+  queryOrPage: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    status?: DropStatus;
+    sort: "newest" | "oldest" | "name_asc" | "name_desc" | "start_asc" | "start_desc";
+  } | number,
+  legacyPageSize?: number,
+) {
+  const query =
+    typeof queryOrPage === "number"
+      ? {
+          page: queryOrPage,
+          pageSize: legacyPageSize ?? 20,
+          sort: "newest" as const,
+        }
+      : queryOrPage;
+  const { rows, total } = await dropRepo.listAdminDrops(query);
   return {
     data: rows.map(mapDrop),
-    pagination: paginationMeta(page, pageSize, total),
+    pagination: paginationMeta(query.page, query.pageSize, total),
   };
 }
 

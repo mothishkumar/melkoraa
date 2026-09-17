@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.vercel-shared-src/
+.env
+.env.*
+!.env.example
+.vercel

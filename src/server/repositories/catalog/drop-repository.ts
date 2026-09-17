@@ -1,7 +1,8 @@
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 
 import { dropProducts, drops, products } from "@/db/schema";
 import { loadPagedRows } from "@/db/paginate";
+import { escapeIlike } from "@/lib/catalog/rules";
 import { catalogDb, type CatalogDb } from "@/server/repositories/catalog/db";
 
 export async function listPublicDrops(page: number, pageSize: number, db?: CatalogDb) {
@@ -31,13 +32,46 @@ export async function listPublicDrops(page: number, pageSize: number, db?: Catal
   );
 }
 
-export async function listAdminDrops(page: number, pageSize: number, db?: CatalogDb) {
+export async function listAdminDrops(
+  filters: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    status?: "draft" | "scheduled" | "active" | "ended" | "archived";
+    sort: "newest" | "oldest" | "name_asc" | "name_desc" | "start_asc" | "start_desc";
+  },
+  db?: CatalogDb,
+) {
   const client = catalogDb(db);
-  const offset = (page - 1) * pageSize;
+  const offset = (filters.page - 1) * filters.pageSize;
+  const conditions: SQL[] = [];
+  if (filters.status) conditions.push(eq(drops.status, filters.status));
+  if (filters.search) {
+    const pattern = `%${escapeIlike(filters.search)}%`;
+    const search = or(
+      ilike(drops.name, pattern),
+      ilike(drops.slug, pattern),
+      ilike(drops.description, pattern),
+    );
+    if (search) conditions.push(search);
+  }
+  const where = conditions.length ? and(...conditions) : undefined;
+  const order =
+    filters.sort === "oldest"
+      ? [asc(drops.createdAt), asc(drops.id)]
+      : filters.sort === "name_asc"
+        ? [asc(drops.name), asc(drops.id)]
+        : filters.sort === "name_desc"
+          ? [desc(drops.name), asc(drops.id)]
+          : filters.sort === "start_asc"
+            ? [asc(drops.startAt), asc(drops.id)]
+            : filters.sort === "start_desc"
+              ? [desc(drops.startAt), asc(drops.id)]
+              : [desc(drops.createdAt), desc(drops.id)];
   return loadPagedRows(
     () =>
-      client.select().from(drops).orderBy(desc(drops.createdAt)).limit(pageSize).offset(offset),
-    () => client.select({ value: count() }).from(drops),
+      client.select().from(drops).where(where).orderBy(...order).limit(filters.pageSize).offset(offset),
+    () => client.select({ value: count() }).from(drops).where(where),
   );
 }
 

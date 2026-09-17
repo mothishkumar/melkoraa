@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, type SQL } from "drizzle-orm";
 
 import { profiles } from "@/db/schema";
 import { loadPagedRows } from "@/db/paginate";
@@ -6,7 +6,12 @@ import { orderDb, type OrderDb } from "@/server/repositories/orders/db";
 import { escapeIlike } from "@/lib/catalog/rules";
 
 export async function listCustomerProfiles(
-  filters: { page: number; pageSize: number; search?: string },
+  filters: {
+    page: number;
+    pageSize: number;
+    search?: string;
+    sort: "newest" | "oldest" | "name_asc" | "name_desc";
+  },
   db?: OrderDb,
 ) {
   const client = orderDb(db);
@@ -22,6 +27,14 @@ export async function listCustomerProfiles(
     if (search) conditions.push(search);
   }
   const where = and(...conditions);
+  const order =
+    filters.sort === "oldest"
+      ? [asc(profiles.createdAt), asc(profiles.id)]
+      : filters.sort === "name_asc"
+        ? [asc(profiles.firstName), asc(profiles.lastName), asc(profiles.id)]
+        : filters.sort === "name_desc"
+          ? [desc(profiles.firstName), desc(profiles.lastName), asc(profiles.id)]
+          : [desc(profiles.createdAt), desc(profiles.id)];
   return loadPagedRows(
     () =>
       client
@@ -34,7 +47,7 @@ export async function listCustomerProfiles(
         })
         .from(profiles)
         .where(where)
-        .orderBy(desc(profiles.createdAt))
+        .orderBy(...order)
         .limit(filters.pageSize)
         .offset(offset),
     () => client.select({ value: count() }).from(profiles).where(where),

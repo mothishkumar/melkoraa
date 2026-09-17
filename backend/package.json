@@ -1,0 +1,43 @@
+{
+  "name": "melkoraa-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --import ./src/register.mjs src/index.ts",
+    "start": "tsx --import ./src/register.mjs src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "bundle:vercel": "node scripts/bundle-vercel-api.mjs",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.45.2",
+    "express": "^4.21.2",
+    "multer": "^2.4.0",
+    "postgres": "^3.4.9",
+    "razorpay": "^2.9.8",
+    "server-only": "file:./vendor/server-only",
+    "esbuild": "^0.25.0",
+    "serverless-http": "^3.2.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "tsx": "^4.23.13",
+    "typescript": "^5",
+    "typescript-eslint": "^8.70.0"
+  }
+}

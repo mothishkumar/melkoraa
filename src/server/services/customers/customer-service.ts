@@ -13,6 +13,7 @@ export async function listAdminCustomers(query: {
   page: number;
   pageSize: number;
   search?: string;
+  sort: "newest" | "oldest" | "name_asc" | "name_desc";
 }) {
   const { rows, total } = await customerRepo.listCustomerProfiles(query);
   const userIds = rows.map((row) => row.userId);

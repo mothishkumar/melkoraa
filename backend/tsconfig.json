@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "paths": {
+      "@/*": ["../src/*"],
+      "@/lib/supabase/server": ["./src/shims/supabase-server.ts"],
+      "drizzle-orm": ["./node_modules/drizzle-orm"],
+      "drizzle-orm/*": ["./node_modules/drizzle-orm/*"],
+      "postgres": ["./node_modules/postgres"],
+      "postgres/*": ["./node_modules/postgres/*"],
+      "razorpay": ["./node_modules/razorpay"],
+      "razorpay/*": ["./node_modules/razorpay/*"],
+      "zod": ["./node_modules/zod"],
+      "zod/*": ["./node_modules/zod/*"],
+      "@supabase/supabase-js": ["./node_modules/@supabase/supabase-js"],
+      "@supabase/ssr": ["./node_modules/@supabase/ssr"],
+      "react": ["./src/shims/react.ts"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}
