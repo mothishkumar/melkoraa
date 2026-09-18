@@ -1,16 +1,17 @@
 export const brand = {
   name: "MELKORAA",
-  tagline: "BUILD YOUR OWN IDENTITY.",
+  tagline: "WEAR A HIGHER STANDARD.",
   drop: {
     code: "DROP 001",
     name: "THE BUILDER",
     label: "DROP 001 — THE BUILDER",
-    message: "BUILT FROM NOTHING.",
+    message: "PEOPLE. IDEAS. PROGRESS. TOGETHER.",
   },
   copy: {
     path: "FOR THOSE WHO BUILD THEIR OWN PATH.",
     exclusive: "NOT MADE FOR EVERYONE.",
     keepBuilding: "KEEP BUILDING.",
+    together: "PEOPLE. IDEAS. PROGRESS. TOGETHER.",
   },
 } as const;
 

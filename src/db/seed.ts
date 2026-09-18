@@ -1,7 +1,14 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
+import {
+  DROP_001_COLORS,
+  DROP_001_LEGACY_SLUGS,
+  DROP_001_PRODUCTS,
+  DROP_001_SIZES,
+  drop001Sku,
+} from "@/lib/catalog/drop-001";
 import { loadProjectEnv } from "@/lib/env/load";
 import {
   requirePostgresConnectionString,
@@ -10,6 +17,7 @@ import {
 
 import {
   categories,
+  collections,
   dropProducts,
   drops,
   inventory,
@@ -17,29 +25,7 @@ import {
   productCategories,
   products,
   productVariants,
-  collections,
 } from "./schema";
-
-const APPAREL_SIZES = [
-  { size: "S", qty: 15 },
-  { size: "M", qty: 45 },
-  { size: "L", qty: 53 },
-  { size: "XL", qty: 30 },
-  { size: "XXL", qty: 7 },
-] as const;
-
-const COLOR = { name: "Black", code: "#050505", sku: "BLK" } as const;
-
-type SeedProduct = {
-  slug: string;
-  name: string;
-  shortDescription: string;
-  description: string;
-  price: string;
-  categorySlug: string;
-  skuPrefix: string;
-  kind: "apparel" | "cap";
-};
 
 const SEED_CATEGORIES = [
   { slug: "t-shirts", name: "T-Shirts", description: "Oversized and essential tees." },
@@ -48,59 +34,6 @@ const SEED_CATEGORIES = [
   { slug: "bottoms", name: "Bottoms", description: "Cargos and trousers." },
   { slug: "accessories", name: "Accessories", description: "Caps and finishing pieces." },
 ] as const;
-
-const SEED_PRODUCTS: SeedProduct[] = [
-  {
-    slug: "the-builder-oversized-t-shirt",
-    name: "The Builder Oversized T-Shirt",
-    shortDescription: "Built from nothing. Worn as a statement.",
-    description: "Oversized street tee from DROP 001 — THE BUILDER.",
-    price: "1499.00",
-    categorySlug: "t-shirts",
-    skuPrefix: "THE-BUILDER-TEE",
-    kind: "apparel",
-  },
-  {
-    slug: "the-builder-heavyweight-hoodie",
-    name: "The Builder Heavyweight Hoodie",
-    shortDescription: "Heavyweight layer. Limited drop.",
-    description: "Heavyweight hoodie from DROP 001 — THE BUILDER.",
-    price: "2999.00",
-    categorySlug: "hoodies",
-    skuPrefix: "THE-BUILDER-HOODIE",
-    kind: "apparel",
-  },
-  {
-    slug: "the-builder-overshirt",
-    name: "The Builder Overshirt",
-    shortDescription: "Workwear cut. Builder identity.",
-    description: "Overshirt from DROP 001 — THE BUILDER.",
-    price: "2299.00",
-    categorySlug: "overshirts",
-    skuPrefix: "THE-BUILDER-OVERSHIRT",
-    kind: "apparel",
-  },
-  {
-    slug: "the-builder-cargo",
-    name: "The Builder Cargo",
-    shortDescription: "Utility cargo. Never restocked.",
-    description: "Cargo from DROP 001 — THE BUILDER.",
-    price: "1999.00",
-    categorySlug: "bottoms",
-    skuPrefix: "THE-BUILDER-CARGO",
-    kind: "apparel",
-  },
-  {
-    slug: "the-builder-cap",
-    name: "The Builder Cap",
-    shortDescription: "One size. One drop.",
-    description: "Cap from DROP 001 — THE BUILDER.",
-    price: "1199.00",
-    categorySlug: "accessories",
-    skuPrefix: "THE-BUILDER-CAP",
-    kind: "cap",
-  },
-];
 
 async function upsertCategory(
   db: ReturnType<typeof drizzle>,
@@ -141,37 +74,40 @@ export async function seedDatabase(connectionString: string) {
       categoryIds.set(category.slug, await upsertCategory(db, category));
     }
 
-    const [collection] = await db
+    const teeCategoryId = categoryIds.get("t-shirts");
+    if (!teeCategoryId) {
+      throw new Error("Missing t-shirts category");
+    }
+
+    await db
       .insert(collections)
       .values({
         name: "DROP 001 — THE BUILDER",
         slug: "the-builder",
-        description: "BUILT FROM NOTHING.",
+        description: "Identity and manifesto oversized tees. People. Ideas. Progress. Together.",
         status: "active",
         seoTitle: "DROP 001 — THE BUILDER",
-        seoDescription: "The first MELKORAA collection. Built from nothing.",
+        seoDescription: "The first MELKORAA collection. Six production tees. Never restocked.",
       })
       .onConflictDoUpdate({
         target: collections.slug,
         set: {
           name: "DROP 001 — THE BUILDER",
-          description: "BUILT FROM NOTHING.",
+          description: "Identity and manifesto oversized tees. People. Ideas. Progress. Together.",
           status: "active",
+          seoTitle: "DROP 001 — THE BUILDER",
+          seoDescription: "The first MELKORAA collection. Six production tees. Never restocked.",
           updatedAt: new Date(),
         },
-      })
-      .returning({ id: collections.id });
-
-    if (!collection) {
-      throw new Error("Failed to upsert collection");
-    }
+      });
 
     const [drop] = await db
       .insert(drops)
       .values({
         name: "DROP 001 — THE BUILDER",
         slug: "drop-001",
-        description: "DROP 001. THE BUILDER. BUILT FROM NOTHING.",
+        description:
+          "DROP 001. THE BUILDER. Identity trio plus three manifesto graphics. Wear a higher standard.",
         status: "active",
         isLimited: true,
         isNeverRestocked: true,
@@ -180,7 +116,8 @@ export async function seedDatabase(connectionString: string) {
         target: drops.slug,
         set: {
           name: "DROP 001 — THE BUILDER",
-          description: "DROP 001. THE BUILDER. BUILT FROM NOTHING.",
+          description:
+            "DROP 001. THE BUILDER. Identity trio plus three manifesto graphics. Wear a higher standard.",
           status: "active",
           isLimited: true,
           isNeverRestocked: true,
@@ -193,8 +130,24 @@ export async function seedDatabase(connectionString: string) {
       throw new Error("Failed to upsert drop");
     }
 
+    const legacy = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(inArray(products.slug, [...DROP_001_LEGACY_SLUGS]));
+
+    if (legacy.length > 0) {
+      const legacyIds = legacy.map((row) => row.id);
+      await db.delete(dropProducts).where(
+        and(eq(dropProducts.dropId, drop.id), inArray(dropProducts.productId, legacyIds)),
+      );
+      await db
+        .update(products)
+        .set({ status: "archived", updatedAt: new Date() })
+        .where(inArray(products.id, legacyIds));
+    }
+
     let displayOrder = 0;
-    for (const product of SEED_PRODUCTS) {
+    for (const product of DROP_001_PRODUCTS) {
       const [saved] = await db
         .insert(products)
         .values({
@@ -205,8 +158,8 @@ export async function seedDatabase(connectionString: string) {
           status: "active",
           basePrice: product.price,
           brand: "MELKORAA",
-          seoTitle: `${product.name} — MELKORAA`,
-          seoDescription: product.shortDescription,
+          seoTitle: `${product.name} — MELKORAA DROP 001`,
+          seoDescription: product.tagline,
         })
         .onConflictDoUpdate({
           target: products.slug,
@@ -216,6 +169,8 @@ export async function seedDatabase(connectionString: string) {
             description: product.description,
             status: "active",
             basePrice: product.price,
+            seoTitle: `${product.name} — MELKORAA DROP 001`,
+            seoDescription: product.tagline,
             updatedAt: new Date(),
           },
         })
@@ -225,14 +180,9 @@ export async function seedDatabase(connectionString: string) {
         throw new Error(`Failed to upsert product ${product.slug}`);
       }
 
-      const categoryId = categoryIds.get(product.categorySlug);
-      if (!categoryId) {
-        throw new Error(`Missing category ${product.categorySlug}`);
-      }
-
       await db
         .insert(productCategories)
-        .values({ productId: saved.id, categoryId })
+        .values({ productId: saved.id, categoryId: teeCategoryId })
         .onConflictDoNothing();
 
       await db
@@ -249,89 +199,81 @@ export async function seedDatabase(connectionString: string) {
 
       displayOrder += 1;
 
-      const variants =
-        product.kind === "cap"
-          ? [{ size: "ONE SIZE", qty: 150, skuSize: "OS" }]
-          : APPAREL_SIZES.map((entry) => ({
-              size: entry.size,
-              qty: entry.qty,
-              skuSize: entry.size,
-            }));
-
-      for (const variant of variants) {
-        const sku = `${product.skuPrefix}-${COLOR.sku}-${variant.skuSize}`;
-        const [savedVariant] = await db
-          .insert(productVariants)
-          .values({
-            productId: saved.id,
-            sku,
-            size: variant.size,
-            color: COLOR.name,
-            colorCode: COLOR.code,
-            price: product.price,
-            isActive: true,
-          })
-          .onConflictDoUpdate({
-            target: productVariants.sku,
-            set: {
+      for (const colorKey of product.colors) {
+        const color = DROP_001_COLORS[colorKey];
+        for (const variant of DROP_001_SIZES) {
+          const sku = drop001Sku(product.skuPrefix, color.sku, variant.size);
+          const [savedVariant] = await db
+            .insert(productVariants)
+            .values({
+              productId: saved.id,
+              sku,
               size: variant.size,
-              color: COLOR.name,
-              colorCode: COLOR.code,
+              color: color.name,
+              colorCode: color.code,
               price: product.price,
               isActive: true,
-              updatedAt: new Date(),
-            },
-          })
-          .returning({ id: productVariants.id });
+            })
+            .onConflictDoUpdate({
+              target: productVariants.sku,
+              set: {
+                size: variant.size,
+                color: color.name,
+                colorCode: color.code,
+                price: product.price,
+                isActive: true,
+                updatedAt: new Date(),
+              },
+            })
+            .returning({ id: productVariants.id });
 
-        if (!savedVariant) {
-          throw new Error(`Failed to upsert variant ${sku}`);
-        }
+          if (!savedVariant) {
+            throw new Error(`Failed to upsert variant ${sku}`);
+          }
 
-        await db
-          .insert(inventory)
-          .values({
-            variantId: savedVariant.id,
-            quantityOnHand: variant.qty,
-            quantityReserved: 0,
-            quantitySold: 0,
-            reorderLevel: 0,
-          })
-          .onConflictDoUpdate({
-            target: inventory.variantId,
-            set: {
+          await db
+            .insert(inventory)
+            .values({
+              variantId: savedVariant.id,
               quantityOnHand: variant.qty,
               quantityReserved: 0,
+              quantitySold: 0,
               reorderLevel: 0,
-              updatedAt: new Date(),
-            },
-          });
+            })
+            .onConflictDoUpdate({
+              target: inventory.variantId,
+              set: {
+                quantityOnHand: variant.qty,
+                quantityReserved: 0,
+                reorderLevel: 0,
+                updatedAt: new Date(),
+              },
+            });
 
-        const existingSeedTxn = await db
-          .select({ id: inventoryTransactions.id })
-          .from(inventoryTransactions)
-          .where(
-            and(
-              eq(inventoryTransactions.variantId, savedVariant.id),
-              eq(inventoryTransactions.referenceType, "seed"),
-            ),
-          )
-          .limit(1);
+          const existingSeedTxn = await db
+            .select({ id: inventoryTransactions.id })
+            .from(inventoryTransactions)
+            .where(
+              and(
+                eq(inventoryTransactions.variantId, savedVariant.id),
+                eq(inventoryTransactions.referenceType, "seed"),
+              ),
+            )
+            .limit(1);
 
-        if (existingSeedTxn.length === 0) {
-          await db.insert(inventoryTransactions).values({
-            variantId: savedVariant.id,
-            transactionType: "purchase",
-            quantity: variant.qty,
-            referenceType: "seed",
-            referenceId: savedVariant.id,
-            notes: "Initial DROP 001 seed inventory",
-          });
+          if (existingSeedTxn.length === 0) {
+            await db.insert(inventoryTransactions).values({
+              variantId: savedVariant.id,
+              transactionType: "purchase",
+              quantity: variant.qty,
+              referenceType: "seed",
+              referenceId: savedVariant.id,
+              notes: "Initial DROP 001 seed inventory",
+            });
+          }
         }
       }
     }
-
-    void collection;
   } finally {
     await client.end();
   }
@@ -341,7 +283,7 @@ async function main() {
   loadProjectEnv();
   const databaseUrl = process.env.DATABASE_URL;
   await seedDatabase(requirePostgresConnectionString(databaseUrl, "DATABASE_URL"));
-  console.info("Seed complete: DROP 001 catalog is upserted.");
+  console.info("Seed complete: DROP 001 production tees are upserted.");
 }
 
 main().catch((error: unknown) => {

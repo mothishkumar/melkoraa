@@ -87,7 +87,7 @@ No admin refund, capture, shipment, or cancel UI — those APIs are not implemen
 
 ## Drops and collections
 
-Drops including seeded **DROP 001 / THE BUILDER** come from the database. Create/edit/archive and product association use existing drop APIs.
+Drops including seeded **DROP 001 / THE BUILDER** (six production oversized tees) come from the database. Create/edit/archive and product association use existing drop APIs.
 
 Collections: list/create/edit/archive. Product membership is not stored on collections; public `?collection=` still means products in an active drop.
 

@@ -6,6 +6,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchase } from "@/components/product/product-purchase";
 import { useAuth } from "@/contexts/auth-context";
 import { fetchProduct } from "@/lib/api/catalog";
+import { DROP_001_BY_SLUG, withDrop001DetailMedia } from "@/lib/catalog/drop-001";
 import type { ProductDetail } from "@/types/catalog";
 
 export function ProductPage() {
@@ -17,7 +18,7 @@ export function ProductPage() {
   useEffect(() => {
     if (!slug) return;
     void fetchProduct(slug)
-      .then(setProduct)
+      .then((detail) => setProduct(withDrop001DetailMedia(detail)))
       .catch(() => setError(true));
   }, [slug]);
 
@@ -33,7 +34,12 @@ export function ProductPage() {
     <StoreSurface>
       <div className="mx-auto grid max-w-[1600px] gap-12 px-4 py-10 md:grid-cols-2 md:px-8 md:py-16">
         <ProductGallery images={product.images} productName={product.name} />
-        <ProductPurchase product={product} wishlisted={false} isAuthenticated={isAuthenticated} />
+        <ProductPurchase
+          product={product}
+          wishlisted={false}
+          isAuthenticated={isAuthenticated}
+          printNote={DROP_001_BY_SLUG[product.slug]?.tagline}
+        />
       </div>
     </StoreSurface>
   );

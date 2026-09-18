@@ -14,8 +14,8 @@ export default function AboutPage() {
         <h1 className="editorial-display mt-6 text-5xl md:text-7xl">{brand.tagline}</h1>
         <div className="mt-16 grid gap-16 md:grid-cols-2">
           <p className="text-sm leading-8 text-[#6f6b66]">
-            MELKORAA is a premium contemporary streetwear house. DROP 001 — THE BUILDER is the first
-            collection: constructed, restrained, and built from nothing.
+            MELKORAA is a premium contemporary streetwear house. DROP 001 — THE BUILDER is six
+            production oversized tees: an identity trio and three manifesto graphics.
           </p>
           <p className="font-heading text-2xl leading-snug md:text-3xl">{brand.copy.path}</p>
         </div>

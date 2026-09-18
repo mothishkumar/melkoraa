@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2400 3000" width="2400" height="3000">
+  <title>DROP 001 24 Hours - back</title>
+  <g fill="#D8D4CC">
+    <circle cx="1200" cy="980" r="430" fill="none" stroke="#D8D4CC" stroke-width="10" stroke-dasharray="8 18"/>
+    <g opacity="0.9">
+      <rect x="980" y="620" width="440" height="720" rx="220"/>
+      <rect x="1040" y="700" width="140" height="90" fill="#050505"/>
+      <rect x="1220" y="700" width="140" height="90" fill="#050505"/>
+    </g>
+    <g opacity="0.35">
+      <rect x="1460" y="640" width="18" height="120"/>
+      <rect x="1500" y="700" width="12" height="180"/>
+      <rect x="1534" y="760" width="8" height="220"/>
+      <rect x="1560" y="820" width="6" height="160"/>
+    </g>
+  </g>
+  <g fill="#F4F1EA" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif">
+    <text x="1200" y="1680" font-size="48" letter-spacing="10">EVERYONE GETS THE SAME 24</text>
+    <text x="1200" y="1760" font-size="48" letter-spacing="10">WHAT YOU DO WITH THEM IS YOURS</text>
+  </g>
+</svg>

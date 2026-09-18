@@ -43,7 +43,7 @@ Variant must exist, `is_active`, and the product must be `active` (Phase 4 publi
       "variantId": "…",
       "productId": "…",
       "productName": "The Builder Cap",
-      "productSlug": "the-builder-cap",
+      "productSlug": "essential-oversized-tee",
       "sku": "THE-BUILDER-CAP-BLK-OS",
       "size": "ONE SIZE",
       "color": "Black",
