@@ -179,9 +179,9 @@ No product files are uploaded in this phase.
 
 - Categories: t-shirts, hoodies, overshirts, bottoms, accessories
 - Collection + drop: DROP 001 — THE BUILDER
-- Five products with prices in INR
-- Apparel sizes S–XXL with stock **15 / 45 / 53 / 30 / 7** (150 per product)
-- Cap ONE SIZE = 150
+- Six oversized tees (identity + manifesto) with colourways
+- Apparel sizes S–XXL with stock **15 / 45 / 53 / 30 / 7** per colourway
+- Placeholder Builder SKUs are archived and removed from the drop
 - Initial `inventory_transactions` of type `purchase` with `reference_type = seed` (inserted once per variant)
 
 Edition numbers are **not** assigned here.

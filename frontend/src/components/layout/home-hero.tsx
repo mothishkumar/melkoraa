@@ -9,7 +9,10 @@ import type { ProductListItem } from "@/types/catalog";
 export function HomeHero({ products = [] }: { products?: ProductListItem[] }) {
   const navigate = useNavigate();
   const unlock = useIntroScrollLock(true);
-  const backdrop = products.find((product) => product.primaryImage?.url)?.primaryImage;
+  const backdrop =
+    products.find((product) => product.primaryImage?.url)?.primaryImage ?? {
+      url: "/catalog/signature-black-back.png",
+    };
 
   function enterDrop() {
     unlock();
@@ -41,7 +44,7 @@ export function HomeHero({ products = [] }: { products?: ProductListItem[] }) {
             {brand.drop.code}
             <span className="mt-3 block text-[0.38em] tracking-[0.42em] text-off-white/80">{brand.drop.name}</span>
           </h1>
-          <p className="mt-6 text-[0.7rem] tracking-[0.32em] text-stone uppercase">Four stories. One higher tomorrow.</p>
+          <p className="mt-6 text-[0.7rem] tracking-[0.32em] text-stone uppercase">{brand.drop.message}</p>
           <button type="button" onClick={enterDrop} className="mk-outline mt-10 border-off-white text-off-white hover:bg-off-white hover:text-black">
             Shop {brand.drop.code}
           </button>

@@ -21,7 +21,7 @@ export const metadata = {
 
 async function FeaturedDrop() {
   const [featured, user] = await Promise.all([
-    loadPublicCatalog({}, { drop: "drop-001", pageSize: "4" }),
+    loadPublicCatalog({}, { drop: "drop-001", pageSize: "6" }),
     getCurrentUser(),
   ]);
   return <HomeContent products={featured.products} isAuthenticated={Boolean(user)} />;
@@ -45,7 +45,7 @@ function HomeContent({
             {brand.drop.name}
           </p>
           <p className="mx-auto mt-4 max-w-md text-center text-sm text-[#6f6b66]">
-            Four stories. One higher tomorrow.
+            {brand.drop.message}
           </p>
           <div className="mt-14">
             <ProductGrid

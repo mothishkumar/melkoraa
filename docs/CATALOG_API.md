@@ -36,7 +36,7 @@ Invalid query → `400` `{ error: { code, message, details? } }`.
 
 Missing or non-active → `404` `PRODUCT_NOT_FOUND`.
 
-Seeded example: `/api/v1/products/the-builder-oversized-t-shirt`.
+Seeded example: `/api/v1/products/essential-oversized-tee`.
 
 ### `GET /api/v1/categories`
 

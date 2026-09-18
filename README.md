@@ -38,7 +38,7 @@ See [DATABASE.md](./DATABASE.md) for schema, RLS, and seed details.
 | `npm run build` | Production build |
 | `npm run db:generate` | Generate Drizzle migrations from schema |
 | `npm run db:migrate` | Apply reviewed migrations |
-| `npm run db:seed` | Idempotent DROP 001 catalog seed |
+| `npm run db:seed` | Idempotent DROP 001 production tee seed |
 | `npm run db:studio` | Drizzle Studio |
 
 ## Layout

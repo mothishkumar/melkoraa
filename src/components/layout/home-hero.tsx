@@ -63,7 +63,7 @@ export function HomeHero({ products = [] }: { products?: ProductListItem[] }) {
             </span>
           </h1>
           <p className="mt-6 text-[0.7rem] tracking-[0.32em] text-stone uppercase">
-            Four stories. One higher tomorrow.
+            {brand.drop.message}
           </p>
           <button
             type="button"

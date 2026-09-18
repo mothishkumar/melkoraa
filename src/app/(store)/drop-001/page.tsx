@@ -41,7 +41,7 @@ export default async function Drop001Page() {
           {drop.name}
         </p>
         <p className="mx-auto mt-6 max-w-xl text-center text-sm leading-7 text-[#6f6b66]">
-          {drop.description ?? "Four stories. One higher tomorrow."}
+          {drop.description ?? brand.drop.message}
         </p>
         <div className="mt-16">
           <ProductGrid products={catalog.products} isAuthenticated={Boolean(user)} />

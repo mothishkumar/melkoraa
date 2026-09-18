@@ -15,10 +15,12 @@ export function ProductPurchase({
   product,
   wishlisted,
   isAuthenticated,
+  printNote,
 }: {
   product: ProductDetail;
   wishlisted: boolean;
   isAuthenticated: boolean;
+  printNote?: string;
 }) {
   const navigate = useNavigate();
   const sizes = useMemo(
@@ -46,6 +48,7 @@ export function ProductPurchase({
       <div>
         <p className="label-caps text-[#8a8580]">{product.drop?.name ?? "MELKORAA"}</p>
         <h1 className="editorial-display mt-3 text-4xl tracking-[0.12em] text-[#111] md:text-5xl">{product.name}</h1>
+        {printNote ? <p className="mt-3 text-sm tracking-[0.14em] uppercase text-[#6f6b66]">{printNote}</p> : null}
         <p className="mt-5 text-lg text-[#111]">{formatInr(price)}</p>
         {product.compareAtPrice ? (
           <p className="mt-1 text-sm text-[#6f6b66] line-through">{formatInr(product.compareAtPrice)}</p>
@@ -89,18 +92,24 @@ export function ProductPurchase({
         <fieldset>
           <legend className="label-caps mb-3">Color</legend>
           <div className="flex flex-wrap gap-2">
-            {colors.map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setColor(value)}
-                className={`min-h-11 border px-4 text-sm ${
-                  color === value ? "border-black bg-black text-white" : "border-black/20"
-                }`}
-              >
-                {value}
-              </button>
-            ))}
+            {colors.map((value) => {
+              const swatch = product.variants.find((variant) => variant.color === value)?.colorCode;
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setColor(value)}
+                  className={`flex min-h-11 items-center gap-2 border px-4 text-sm ${
+                    color === value ? "border-black bg-black text-white" : "border-black/20"
+                  }`}
+                >
+                  {swatch ? (
+                    <span className="size-3 rounded-full border border-current/30" style={{ background: swatch }} />
+                  ) : null}
+                  {value}
+                </button>
+              );
+            })}
           </div>
         </fieldset>
       ) : null}
@@ -183,7 +192,7 @@ export function ProductPurchase({
       <details className="border-t border-black/10 pt-4">
         <summary className="label-caps cursor-pointer list-none">Product details</summary>
         <p className="mt-3 text-sm leading-7 text-[#6f6b66]">
-          {product.shortDescription ?? product.description ?? product.brand}
+          240 GSM cotton. Oversized dropped-shoulder fit. Screen print. Limited DROP 001 — never restocked.
         </p>
       </details>
       {product.description && product.shortDescription ? (

@@ -15,8 +15,9 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    void fetchProducts({ drop: "drop-001", pageSize: "4" })
+    void fetchProducts({ drop: "drop-001", pageSize: "6" })
       .then((result) => setProducts(result.data))
+      .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, []);
 
@@ -32,7 +33,17 @@ export function HomePage() {
           <p className="label-caps text-center">Limited release</p>
           <h2 className="editorial-display mt-4 text-center text-4xl md:text-6xl">{brand.drop.code}</h2>
           <p className="mt-3 text-center font-heading text-xl tracking-[0.2em] uppercase text-[#111]/70">{brand.drop.name}</p>
-          <p className="mx-auto mt-4 max-w-md text-center text-sm text-[#6f6b66]">Four stories. One higher tomorrow.</p>
+          <p className="mx-auto mt-4 max-w-md text-center text-sm text-[#6f6b66]">{brand.drop.message}</p>
+          <figure className="mt-14 overflow-hidden border border-black/10">
+            <img
+              src="/lookbook/identity-line.png"
+              alt="DROP 001 identity line: Essential, Signature, and Statement oversized tees"
+              className="h-auto w-full"
+            />
+            <figcaption className="px-4 py-3 text-center text-[0.62rem] tracking-[0.22em] uppercase text-[#6f6b66]">
+              01 Essential · 02 Signature · 03 Statement
+            </figcaption>
+          </figure>
           <div className="mt-14">
             <ProductGrid products={products} isAuthenticated={isAuthenticated} emptyLabel="THE DROP IS BEING SET." />
           </div>
